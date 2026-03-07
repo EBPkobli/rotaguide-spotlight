@@ -17,6 +17,13 @@ export const GUIDE_HIGHLIGHT_ANIMATIONS = [
   "dash",
   "color-dash",
 ] as const;
+export const GUIDE_TOOLTIP_PLACEMENTS = [
+  "auto",
+  "top",
+  "right",
+  "bottom",
+  "left",
+] as const;
 export const GUIDE_TOOLTIP_TEMPLATES = [
   "default",
   "glass",
@@ -34,6 +41,7 @@ export type GuideAdvanceMode = (typeof GUIDE_ADVANCE_MODES)[number];
 export type GuideSourceFormat = (typeof GUIDE_SOURCE_FORMATS)[number];
 export type GuideHighlightStyle = (typeof GUIDE_HIGHLIGHT_STYLES)[number];
 export type GuideHighlightAnimation = (typeof GUIDE_HIGHLIGHT_ANIMATIONS)[number];
+export type GuideTooltipPlacement = (typeof GUIDE_TOOLTIP_PLACEMENTS)[number];
 export type GuideTooltipTemplate = (typeof GUIDE_TOOLTIP_TEMPLATES)[number];
 
 export interface GuideI18n {
@@ -88,6 +96,7 @@ export interface GuideMeta {
   title: string;
   buttonLabel?: string;
   tooltipTitle?: string;
+  tooltipPlacement?: GuideTooltipPlacement;
   overlayColor?: string;
   highlightColor?: string;
   tooltipWidth?: number;
@@ -106,6 +115,7 @@ export interface GuideStep {
   title: string;
   kind: GuideKind;
   description: string;
+  tooltipPlacement?: GuideTooltipPlacement;
   allowSkip?: boolean;
   skippable?: boolean;
   advanceOn?: GuideAdvanceMode;

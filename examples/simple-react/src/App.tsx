@@ -40,7 +40,9 @@ const invalidGuideJson = `{
   ]
 }`;
 
-function buildTemplateVariantGuide(template: GuideTooltipTemplate, locale: "en" | "tr" | "da") {
+type VariantLocale = "en" | "tr" | "da";
+
+function buildTemplateVariantGuide(template: GuideTooltipTemplate, locale: VariantLocale) {
   return `---
 id: template-${template}
 title: Tooltip Variant ${template}
@@ -54,10 +56,34 @@ showHighlight: true
 ## Step: Preview Tooltip Variant
 \`\`\`yaml
 id: preview-${template}
-target: guide-start-panel
+target: variant-trigger-${template}
 kind: Action
 title: Template preview ${template}
 description: Previewing tooltip template variant ${template}.
+advanceOn: none
+skippable: true
+\`\`\`
+`;
+}
+
+function buildPlacementGuide(placement: "top" | "right" | "left" | "bottom") {
+  return `---
+id: placement-${placement}
+title: Tooltip Placement ${placement}
+buttonLabel: Placement ${placement}
+i18n:
+  locale: en
+showHighlight: true
+---
+
+## Step: Placement Demo
+\`\`\`yaml
+id: placement-${placement}
+target: placement-demo-target
+kind: Action
+title: "Tooltip placement: ${placement}"
+description: "This preview locks the tooltip to ${placement} side of the highlighted target."
+tooltipPlacement: ${placement}
 advanceOn: none
 skippable: true
 \`\`\`
@@ -74,6 +100,7 @@ export default function App() {
   const [parseIssues, setParseIssues] = useState<GuideIssue[]>([]);
   const [throwingParseSummary, setThrowingParseSummary] = useState("");
   const [throwingContentParseSummary, setThrowingContentParseSummary] = useState("");
+  const [variantLocale, setVariantLocale] = useState<VariantLocale>("en");
 
   const validSafeParse = useMemo(() => parseGuideMarkdownSafe(guideMarkdown), []);
   const invalidSafeParse = useMemo(() => parseGuideMarkdownSafe(invalidGuideMarkdown), []);
@@ -87,13 +114,19 @@ export default function App() {
   );
   const variantGuides = useMemo(
     () =>
-      GUIDE_TOOLTIP_TEMPLATES.map((template, index) => ({
+      GUIDE_TOOLTIP_TEMPLATES.map((template) => ({
         template,
-        content: buildTemplateVariantGuide(
-          template,
-          index % 3 === 0 ? "en" : index % 3 === 1 ? "tr" : "da"
-        ),
+        content: buildTemplateVariantGuide(template, variantLocale),
       })),
+    [variantLocale]
+  );
+  const placementGuides = useMemo(
+    () => ({
+      top: buildPlacementGuide("top"),
+      right: buildPlacementGuide("right"),
+      left: buildPlacementGuide("left"),
+      bottom: buildPlacementGuide("bottom"),
+    }),
     []
   );
 
@@ -406,6 +439,19 @@ export default function App() {
 
         <section className="section-stack">
           <h2>Tooltip Template Variants</h2>
+          <div className="variant-controls">
+            <label className="variant-locale-field">
+              <span>Variant Language</span>
+              <select
+                value={variantLocale}
+                onChange={(event) => setVariantLocale(event.target.value as VariantLocale)}
+              >
+                <option value="en">English (en)</option>
+                <option value="tr">Turkish (tr)</option>
+                <option value="da">Danish (da)</option>
+              </select>
+            </label>
+          </div>
           <p className="status-text">
             Each button starts a small guide that previews one `tooltipTemplate` variant.
           </p>
@@ -420,6 +466,7 @@ export default function App() {
                   <button
                     type="button"
                     className="ghost-btn variant-btn"
+                    {...guideTarget(`variant-trigger-${variant.template}`)}
                     onClick={onClick}
                     disabled={disabled}
                   >
@@ -429,6 +476,63 @@ export default function App() {
                 onGuideStart={() => pushEvent(`tooltip template: ${variant.template}`)}
               />
             ))}
+          </div>
+        </section>
+
+        <section className="section-stack">
+          <h2>Tooltip Placement Demo</h2>
+          <p className="status-text">
+            Use these to preview fixed placement modes: top, right, left, and bottom.
+          </p>
+
+          <div className="placement-stage">
+            <div className="placement-target" {...guideTarget("placement-demo-target")}>
+              <span className="placement-side placement-side-top">Top</span>
+              <span className="placement-side placement-side-right">Right</span>
+              <span className="placement-side placement-side-bottom">Bottom</span>
+              <span className="placement-side placement-side-left">Left</span>
+
+              <div className="placement-target-head">
+                <h3>Placement Target Card</h3>
+                <span>Live Anchor</span>
+              </div>
+
+              <p className="placement-target-copy">
+                Tooltip side placement is demonstrated on this card. Pick a side below to lock
+                the guide tooltip around this exact target area.
+              </p>
+
+              <div className="placement-stats">
+                <div>
+                  <span>Response</span>
+                  <strong>118ms</strong>
+                </div>
+                <div>
+                  <span>Uptime</span>
+                  <strong>99.98%</strong>
+                </div>
+                <div>
+                  <span>Alerts</span>
+                  <strong>2</strong>
+                </div>
+              </div>
+
+              <div className="placement-target-foot">
+                <span>Target ID: placement-demo-target</span>
+                <button type="button">Preview Anchor</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="placement-actions">
+            <MarkdownGuideButton content={placementGuides.top} format="markdown" label="Top" />
+            <MarkdownGuideButton content={placementGuides.right} format="markdown" label="Right" />
+            <MarkdownGuideButton content={placementGuides.left} format="markdown" label="Left" />
+            <MarkdownGuideButton
+              content={placementGuides.bottom}
+              format="markdown"
+              label="Bottom"
+            />
           </div>
         </section>
 

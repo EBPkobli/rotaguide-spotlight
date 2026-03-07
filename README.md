@@ -63,6 +63,7 @@ You can control behavior per step in markdown/json/yaml:
 - `showAutoAdvanceProgress: boolean` (`showTimerLoading` alias)
 - `showHighlight: boolean` (also available globally in frontmatter)
 - `highlightColor: string` (step-level, fallback to frontmatter/default)
+- `tooltipPlacement: auto | top | right | bottom | left` (global or per-step)
 - `highlightStyle: line | dash`
 - `highlightAnimation: none | color | dash | color-dash`
 - `tooltipTemplate: default | glass | minimal | contrast | dashboard-orange | clean-white | commerce-dark | terminal-pop | outline-light` (global or per-step preset)

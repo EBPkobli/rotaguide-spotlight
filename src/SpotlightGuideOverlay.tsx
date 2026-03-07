@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import type {
   GuideDefinition,
   GuideHighlightAnimation,
@@ -6,6 +7,7 @@ import type {
   GuideI18n,
   GuideStep,
   GuideTheme,
+  GuideTooltipPlacement,
   GuideTooltipTemplate,
 } from "./types";
 import { getRectForElement, isElementVisible, resolveTargetSelector, type TargetRect } from "./dom";
@@ -23,16 +25,26 @@ interface Position {
   top: number;
 }
 
+interface DragState {
+  startX: number;
+  startY: number;
+  startLeft: number;
+  startTop: number;
+}
+
 const DEFAULT_OVERLAY_COLOR = "rgba(0, 43, 69, 0.22)";
 const DEFAULT_HIGHLIGHT_COLOR = "rgb(255, 199, 0)";
 const DEFAULT_HIGHLIGHT_STYLE: GuideHighlightStyle = "line";
 const DEFAULT_HIGHLIGHT_ANIMATION: GuideHighlightAnimation = "none";
-const DEFAULT_TOOLTIP_TEMPLATE: GuideTooltipTemplate = "default";
+const DEFAULT_TOOLTIP_TEMPLATE: GuideTooltipTemplate = "clean-white";
 const DEFAULT_TOOLTIP_WIDTH = 360;
+const DEFAULT_TOOLTIP_HEIGHT = 260;
 const DEFAULT_INPUT_IDLE_MS = 1500;
 const HIGHLIGHT_OUTER_OFFSET_PX = 1;
 const HIGHLIGHT_STROKE_WIDTH_PX = 4;
 const HIGHLIGHT_RADIUS_PX = 10;
+const TOOLTIP_MARGIN_PX = 16;
+const TOOLTIP_GAP_PX = 12;
 const OVERLAY_OPEN_EVENT = "msgt:overlay-open";
 type ResolvedAdvanceMode = "click" | "change" | "input-idle" | "none";
 
@@ -238,8 +250,11 @@ function resolveTooltipTemplate(
     guide.meta.theme?.tooltipTemplate ??
     DEFAULT_TOOLTIP_TEMPLATE;
 
+  if (candidate === "default") {
+    return DEFAULT_TOOLTIP_TEMPLATE;
+  }
+
   if (
-    candidate === "default" ||
     candidate === "glass" ||
     candidate === "minimal" ||
     candidate === "contrast" ||
@@ -252,6 +267,45 @@ function resolveTooltipTemplate(
     return candidate;
   }
   return DEFAULT_TOOLTIP_TEMPLATE;
+}
+
+function resolveTooltipPlacement(
+  step: GuideStep | undefined,
+  guide: GuideDefinition
+): GuideTooltipPlacement {
+  const candidate = step?.tooltipPlacement ?? guide.meta.tooltipPlacement ?? "auto";
+  if (
+    candidate === "auto" ||
+    candidate === "top" ||
+    candidate === "right" ||
+    candidate === "bottom" ||
+    candidate === "left"
+  ) {
+    return candidate;
+  }
+  return "auto";
+}
+
+function pickAutoPlacement(
+  target: TargetRect,
+  tooltipWidth: number,
+  tooltipHeight: number
+): Exclude<GuideTooltipPlacement, "auto"> {
+  const available = {
+    bottom: window.innerHeight - (target.top + target.height) - TOOLTIP_MARGIN_PX,
+    top: target.top - TOOLTIP_MARGIN_PX,
+    right: window.innerWidth - (target.left + target.width) - TOOLTIP_MARGIN_PX,
+    left: target.left - TOOLTIP_MARGIN_PX,
+  };
+
+  if (available.bottom >= tooltipHeight + TOOLTIP_GAP_PX) return "bottom";
+  if (available.top >= tooltipHeight + TOOLTIP_GAP_PX) return "top";
+  if (available.right >= tooltipWidth + TOOLTIP_GAP_PX) return "right";
+  if (available.left >= tooltipWidth + TOOLTIP_GAP_PX) return "left";
+
+  const best = (Object.entries(available) as Array<[Exclude<GuideTooltipPlacement, "auto">, number]>)
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
+  return best ?? "bottom";
 }
 
 function buildTooltipStyleVars(theme: GuideTheme): TooltipStyleVars {
@@ -384,8 +438,9 @@ export function SpotlightGuideOverlay({
   const [targetMissing, setTargetMissing] = useState(false);
   const [hint, setHint] = useState("");
   const [manualPos, setManualPos] = useState<Position | null>(null);
-  const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [dragOffset, setDragOffset] = useState<DragState | null>(null);
   const [autoAdvanceProgress, setAutoAdvanceProgress] = useState<number | null>(null);
+  const [tooltipSize, setTooltipSize] = useState({ width: DEFAULT_TOOLTIP_WIDTH, height: DEFAULT_TOOLTIP_HEIGHT });
 
   const activeTargetRef = useRef<HTMLElement | null>(null);
   const lastFocusedStepRef = useRef<string>("");
@@ -395,6 +450,7 @@ export function SpotlightGuideOverlay({
   const overlayIdRef = useRef(
     `msgt-overlay-${Math.random().toString(36).slice(2, 10)}`
   );
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
 
   const steps = guide.steps;
   const currentStep = steps[stepIndex];
@@ -428,21 +484,50 @@ export function SpotlightGuideOverlay({
     () => resolveTooltipTemplate(currentStep, guide),
     [currentStep, guide]
   );
+  const tooltipPlacement = useMemo(
+    () => resolveTooltipPlacement(currentStep, guide),
+    [currentStep, guide]
+  );
   const tooltipThemeStyle = useMemo(
     () => buildTooltipStyleVars(resolvedTheme),
     [resolvedTheme]
   );
+  const renderedTooltipWidth = Math.min(tooltipWidth, 540);
 
   const tooltipPos = useMemo(() => {
     if (manualPos) return manualPos;
     if (!targetRect || typeof window === "undefined") {
-      return { left: 16, top: 16 };
+      return { left: TOOLTIP_MARGIN_PX, top: TOOLTIP_MARGIN_PX };
     }
 
-    const x = clamp(targetRect.left, 16, window.innerWidth - tooltipWidth - 16);
-    const y = clamp(targetRect.top + targetRect.height + 12, 16, window.innerHeight - 240);
+    const tipWidth = tooltipSize.width > 0 ? tooltipSize.width : renderedTooltipWidth;
+    const tipHeight = tooltipSize.height > 0 ? tooltipSize.height : DEFAULT_TOOLTIP_HEIGHT;
+    const resolvedPlacement =
+      tooltipPlacement === "auto"
+        ? pickAutoPlacement(targetRect, tipWidth, tipHeight)
+        : tooltipPlacement;
+
+    let x = targetRect.left;
+    let y = targetRect.top + targetRect.height + TOOLTIP_GAP_PX;
+
+    if (resolvedPlacement === "top") {
+      x = targetRect.left + targetRect.width / 2 - tipWidth / 2;
+      y = targetRect.top - tipHeight - TOOLTIP_GAP_PX;
+    } else if (resolvedPlacement === "right") {
+      x = targetRect.left + targetRect.width + TOOLTIP_GAP_PX;
+      y = targetRect.top + targetRect.height / 2 - tipHeight / 2;
+    } else if (resolvedPlacement === "left") {
+      x = targetRect.left - tipWidth - TOOLTIP_GAP_PX;
+      y = targetRect.top + targetRect.height / 2 - tipHeight / 2;
+    } else {
+      x = targetRect.left + targetRect.width / 2 - tipWidth / 2;
+      y = targetRect.top + targetRect.height + TOOLTIP_GAP_PX;
+    }
+
+    x = clamp(x, TOOLTIP_MARGIN_PX, window.innerWidth - tipWidth - TOOLTIP_MARGIN_PX);
+    y = clamp(y, TOOLTIP_MARGIN_PX, window.innerHeight - tipHeight - TOOLTIP_MARGIN_PX);
     return { left: x, top: y };
-  }, [manualPos, targetRect, tooltipWidth]);
+  }, [manualPos, renderedTooltipWidth, targetRect, tooltipPlacement, tooltipSize.height, tooltipSize.width]);
 
   useEffect(() => {
     if (!open) return;
@@ -459,15 +544,47 @@ export function SpotlightGuideOverlay({
   }, [open, guide.meta.id]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!open || typeof window === "undefined") return;
+
+    const measure = () => {
+      const node = tooltipRef.current;
+      if (!node) return;
+      const rect = node.getBoundingClientRect();
+      const nextWidth = Math.max(1, Math.round(rect.width));
+      const nextHeight = Math.max(1, Math.round(rect.height));
+      setTooltipSize((prev) => {
+        if (prev.width === nextWidth && prev.height === nextHeight) {
+          return prev;
+        }
+        return { width: nextWidth, height: nextHeight };
+      });
+    };
+
+    measure();
+    const rafId = window.requestAnimationFrame(measure);
+    window.addEventListener("resize", measure);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && tooltipRef.current) {
+      resizeObserver = new ResizeObserver(measure);
+      resizeObserver.observe(tooltipRef.current);
+    }
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", measure);
+      resizeObserver?.disconnect();
+    };
+  }, [open, stepIndex, tooltipTemplate, renderedTooltipWidth]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !open) return;
 
     const onOverlayOpen = (event: Event) => {
       const customEvent = event as CustomEvent<{ id?: string }>;
       const senderId = customEvent.detail?.id;
       if (!senderId || senderId === overlayIdRef.current) return;
-      if (open) {
-        onClose();
-      }
+      onClose();
     };
 
     window.addEventListener(OVERLAY_OPEN_EVENT, onOverlayOpen as EventListener);
@@ -519,8 +636,19 @@ export function SpotlightGuideOverlay({
     if (!open || !dragOffset) return;
 
     const onPointerMove = (event: PointerEvent) => {
-      const nextLeft = clamp(event.clientX - dragOffset.x, 16, window.innerWidth - tooltipWidth - 16);
-      const nextTop = clamp(event.clientY - dragOffset.y, 16, window.innerHeight - 180);
+      const deltaX = event.clientX - dragOffset.startX;
+      const deltaY = event.clientY - dragOffset.startY;
+      const nextLeft = clamp(
+        dragOffset.startLeft + deltaX,
+        TOOLTIP_MARGIN_PX,
+        window.innerWidth - renderedTooltipWidth - TOOLTIP_MARGIN_PX
+      );
+      const tooltipHeight = tooltipSize.height > 0 ? tooltipSize.height : DEFAULT_TOOLTIP_HEIGHT;
+      const nextTop = clamp(
+        dragOffset.startTop + deltaY,
+        TOOLTIP_MARGIN_PX,
+        window.innerHeight - tooltipHeight - TOOLTIP_MARGIN_PX
+      );
       setManualPos({ left: nextLeft, top: nextTop });
     };
 
@@ -532,12 +660,21 @@ export function SpotlightGuideOverlay({
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
     };
-  }, [dragOffset, open, tooltipWidth]);
+  }, [dragOffset, open, renderedTooltipWidth, tooltipSize.height]);
 
   useEffect(() => {
     if (!open || finished || !currentStep) return;
 
     const selector = resolveTargetSelector(currentStep.target);
+    let rafId: number | null = null;
+
+    const scheduleSync = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        sync();
+      });
+    };
 
     const sync = () => {
       const target = selector ? document.querySelector<HTMLElement>(selector) : null;
@@ -561,7 +698,7 @@ export function SpotlightGuideOverlay({
       setTargetRect(getRectForElement(target));
 
       if (lastFocusedStepRef.current !== currentStep.id) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.scrollIntoView({ behavior: "auto", block: "center" });
         if (mode === "input-idle" || mode === "change") {
           const focusable = getFocusableTarget(target);
           focusable?.focus({ preventScroll: true });
@@ -571,14 +708,17 @@ export function SpotlightGuideOverlay({
     };
 
     sync();
-    const intervalId = window.setInterval(sync, 180);
-    window.addEventListener("resize", sync);
-    window.addEventListener("scroll", sync, true);
+    const intervalId = window.setInterval(scheduleSync, 80);
+    window.addEventListener("resize", scheduleSync);
+    window.addEventListener("scroll", scheduleSync, true);
 
     return () => {
       window.clearInterval(intervalId);
-      window.removeEventListener("resize", sync);
-      window.removeEventListener("scroll", sync, true);
+      window.removeEventListener("resize", scheduleSync);
+      window.removeEventListener("scroll", scheduleSync, true);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
       if (activeTargetRef.current) {
         activeTargetRef.current.classList.remove("msgt-guide-target-active");
       }
@@ -817,7 +957,7 @@ export function SpotlightGuideOverlay({
     guide.meta.tooltipTitle ??
     interpolate(resolvedTexts.completedTitleTemplate, { title: guide.meta.title });
 
-  return (
+  const overlayNode = (
     <div className={`msgt-overlay-root ${className ?? ""}`.trim()} style={{ zIndex }}>
       <div className="msgt-overlay-backdrop" style={{ backgroundColor: overlayColor }} />
 
@@ -860,23 +1000,31 @@ export function SpotlightGuideOverlay({
       )}
 
       <div
+        ref={tooltipRef}
         className={`msgt-tooltip msgt-tooltip--${tooltipTemplate}`}
         style={{
-          width: Math.min(tooltipWidth, 540),
+          width: renderedTooltipWidth,
           left: tooltipPos.left,
           top: tooltipPos.top,
-          cursor: draggable ? (dragOffset ? "grabbing" : "grab") : "default",
           ...tooltipThemeStyle,
-        }}
-        onPointerDown={(event) => {
-          if (!draggable) return;
-          const rect = event.currentTarget.getBoundingClientRect();
-          setDragOffset({ x: event.clientX - rect.left, y: event.clientY - rect.top });
         }}
       >
         {!finished && currentStep ? (
           <>
-            <div className="msgt-tooltip-top">
+            <div
+              className="msgt-tooltip-top"
+              style={{ cursor: draggable ? (dragOffset ? "grabbing" : "grab") : "default" }}
+              onPointerDown={(event) => {
+                if (!draggable) return;
+                event.preventDefault();
+                setDragOffset({
+                  startX: event.clientX,
+                  startY: event.clientY,
+                  startLeft: tooltipPos.left,
+                  startTop: tooltipPos.top,
+                });
+              }}
+            >
               <span className="msgt-pill msgt-pill-step">{stepProgressText}</span>
               <span className="msgt-pill msgt-pill-kind">{currentStep.kind}</span>
             </div>
@@ -914,16 +1062,8 @@ export function SpotlightGuideOverlay({
             )}
 
             <div className="msgt-tooltip-actions">
-              <button
-                type="button"
-                className="msgt-btn msgt-btn-ghost"
-                disabled={stepIndex === 0}
-                onClick={() => {
-                  setHint("");
-                  setStepIndex((prev) => Math.max(0, prev - 1));
-                }}
-              >
-                {resolvedTexts.backButtonLabel}
+              <button type="button" className="msgt-btn msgt-btn-ghost" onClick={onClose}>
+                {resolvedTexts.closeButtonLabel}
               </button>
 
               <div className="msgt-tooltip-right-actions">
@@ -937,8 +1077,16 @@ export function SpotlightGuideOverlay({
                   </button>
                 )}
 
-                <button type="button" className="msgt-btn msgt-btn-ghost" onClick={onClose}>
-                  {resolvedTexts.closeButtonLabel}
+                <button
+                  type="button"
+                  className="msgt-btn msgt-btn-ghost"
+                  disabled={stepIndex === 0}
+                  onClick={() => {
+                    setHint("");
+                    setStepIndex((prev) => Math.max(0, prev - 1));
+                  }}
+                >
+                  {resolvedTexts.backButtonLabel}
                 </button>
 
                 {canSkip && (
@@ -958,7 +1106,6 @@ export function SpotlightGuideOverlay({
             <h3 className="msgt-title">{completedTitle}</h3>
             <p className="msgt-description">{resolvedTexts.completedDescription}</p>
             <div className="msgt-tooltip-actions">
-              <span />
               <button type="button" className="msgt-btn msgt-btn-primary" onClick={onClose}>
                 {resolvedTexts.finishButtonLabel}
               </button>
@@ -968,4 +1115,10 @@ export function SpotlightGuideOverlay({
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") {
+    return overlayNode;
+  }
+
+  return createPortal(overlayNode, document.body);
 }

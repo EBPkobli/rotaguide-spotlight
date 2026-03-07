@@ -27,6 +27,7 @@ theme:
 id: manual-intro
 target: guide-start-panel
 kind: Action
+tooltipTemplate: default
 title: Manual progression with Next button
 description: This step uses advanceOn:none, so you move forward using the tooltip Next action.
 advanceOn: none
@@ -38,6 +39,7 @@ skippable: false
 id: open-create
 target: open-create
 kind: Action
+tooltipTemplate: glass
 title: mustClickTarget enforcement
 description: Click Open Booking Form. Clicking outside the target does not advance.
 advanceOn: click
@@ -51,6 +53,7 @@ skippable: false
 id: customer-name
 target: customer-name
 kind: Input
+tooltipTemplate: minimal
 title: input-idle + mustEnterValue
 description: Type a non-empty customer name, then pause briefly to auto-advance.
 highlightColor: "#22c55e"
@@ -65,6 +68,7 @@ skippable: false
 id: plan-select
 target: plan-select
 kind: Filter
+tooltipTemplate: contrast
 title: change mode with select input
 description: Pick a plan to continue using change events.
 advanceOn: change
@@ -77,6 +81,7 @@ skippable: false
 id: notify-toggle
 target: notify-toggle
 kind: Toggle
+tooltipTemplate: dashboard-orange
 title: skippable step using allowSkip alias
 description: Check the email confirmation option or use Skip.
 advanceOn: change
@@ -89,6 +94,7 @@ allowSkip: true
 id: manual-note
 target: manual-note
 kind: List
+tooltipTemplate: clean-white
 title: List kind with normalized aliases
 description: "This step demonstrates `kind: List` plus alias normalization for highlight fields."
 advanceOn: none
@@ -102,6 +108,7 @@ skippable: true
 id: auto-progress-step
 target: auto-progress-step
 kind: Action
+tooltipTemplate: commerce-dark
 title: autoAdvanceMs with progress bar
 description: This step auto-advances after a timer and shows progress loading.
 advanceOn: none
@@ -116,6 +123,7 @@ showAutoAdvanceProgress: true
 id: auto-hidden-progress-step
 target: auto-hidden-progress-step
 kind: Action
+tooltipTemplate: terminal-pop
 title: durationMs + showTimerLoading alias
 description: Uses alias fields and advances automatically without visible timer bar.
 advanceOn: none
@@ -129,9 +137,15 @@ showTimerLoading: false
 id: list-kind-step
 target: list-kind-step
 kind: List
+tooltipTemplate: outline-light
 title: Explicit List kind target
 description: Additional List kind step for kind coverage in the example.
 advanceOn: none
+backButtonLabel: "Back (Step)"
+nextButtonLabel: "Continue"
+theme:
+  ghostButtonBackgroundColor: "#f3f4f6"
+  ghostButtonTextColor: "#111827"
 highlightStyle: dashed
 skippable: true
 ```
@@ -142,6 +156,7 @@ skippable: true
 	"id": "map-kind-step",
 	"target": "map-kind-step",
 	"kind": "Map Interaction",
+	"tooltipVariant": "standard",
 	"title": "Map Interaction kind with timeoutMs alias",
 	"description": "Demonstrates kind coverage with timeoutMs and showTimerLoading alias.",
 	"advanceOn": "none",
@@ -157,6 +172,7 @@ skippable: true
 id: highlight-off-note
 target: highlight-off-note
 kind: Tab
+tooltipVariant: dark
 title: showHighlight false at step level
 description: The guide continues without drawing yellow highlight for this step.
 showHighlight: false
@@ -170,6 +186,7 @@ skippable: true
 id: missing-target-step
 target: "#missing-target-for-demo"
 kind: Action
+template: terminal
 title: Target-not-found warning behavior
 description: This step intentionally uses a missing selector so you can see the warning hint in tooltip.
 advanceOn: none
@@ -181,6 +198,7 @@ skippable: true
 id: save-booking
 target: "#save-booking-btn"
 kind: Action
+tooltipVariant: ecommerce
 title: Full selector target + strict click
 description: Final step uses a raw CSS selector instead of shorthand target id.
 highlightColor: "#0ea5e9"

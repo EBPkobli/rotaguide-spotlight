@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 
-<html class="dark" lang="en"><head>
+<html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>MD Spotlight Guide - SaaS Dashboard</title>
+<title>MD Spotlight Guide - Feature Showcase</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -26,244 +26,282 @@
             },
         }
     </script>
-<style>
-        .grid-bg {
-            background-image: radial-gradient(circle at 1px 1px, rgba(236, 91, 19, 0.05) 1px, transparent 0);
-            background-size: 24px 24px;
-        }
-        .spotlight-mask {
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
-        }
-    </style>
 </head>
-<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
-<!-- Header / TopNavBar -->
-<header class="sticky top-0 z-40 w-full border-b border-primary/10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 lg:px-10 py-3">
-<div class="max-w-[1440px] mx-auto flex items-center justify-between">
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 w-full border-b border-primary/20 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 lg:px-20 py-3">
+<div class="max-w-7xl mx-auto flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-1.5 rounded-lg text-white">
+<span class="material-symbols-outlined text-2xl">terminal</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight">MD Spotlight Guide</h2>
+</div>
 <div class="flex items-center gap-8">
-<div class="flex items-center gap-3 text-primary">
-<span class="material-symbols-outlined text-3xl font-bold">query_stats</span>
-<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold tracking-tight">MD Spotlight</h2>
-</div>
-<div class="hidden md:flex flex-col min-w-64">
-<div class="flex w-full items-stretch rounded-xl h-10 bg-primary/5 border border-primary/20">
-<div class="flex items-center justify-center pl-4 text-primary/60">
-<span class="material-symbols-outlined text-xl">search</span>
-</div>
-<input class="w-full bg-transparent border-none focus:ring-0 text-sm placeholder:text-primary/40 px-3" placeholder="Search analytics..."/>
-</div>
-</div>
-</div>
-<div class="flex items-center gap-6">
-<nav class="hidden lg:flex items-center gap-8">
-<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Reset</a>
-<div class="relative group">
-<button class="flex items-center gap-1 text-sm font-medium hover:text-primary transition-colors">
-                            Docs <span class="material-symbols-outlined text-xs">expand_more</span>
-</button>
-</div>
-<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Examples</a>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-lg">refresh</span> Reset
+                    </a>
+<a class="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-lg">description</span> Docs
+                    </a>
 </nav>
 <div class="flex items-center gap-3">
-<button class="material-symbols-outlined p-2 text-slate-500 hover:text-primary transition-colors">notifications</button>
-<button class="material-symbols-outlined p-2 text-slate-500 hover:text-primary transition-colors">settings</button>
-<button class="hidden sm:flex items-center justify-center px-4 h-10 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all">
-                        Donate
-                    </button>
-<div class="size-10 rounded-full border-2 border-primary/20 bg-primary/10 overflow-hidden">
-<img alt="User profile" data-alt="Professional user profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtajsxWsaNt1cTdxAPsQlUUgOMbux5MqTxvmbb0N-TA4XNkvGYHmHN5TefAqAdq-IRpn9ebrI1JPpswCDVxkvhLZmgLUst4ITbXNXWeSnGlZjgpuNbWXHeGF3e6rHxHFknEKAsZJ4aUMiPW7Pxgaff8YtdcnLVGd1B_nTsSqUbypyizMLHK8rEmzUPt2QZ2MliMJkOLSY5f0VLZmvt_gZ5iPLIFop7NVi7cK6FeDfvyC-QYBXf5j8_cJwp4dsF--e_k-MIUvOvY64"/>
+<button class="flex items-center justify-center gap-2 rounded-xl h-10 px-5 bg-primary text-white text-sm font-bold transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-lg">coffee</span>
+<span>Donate</span>
+</button>
+<button class="hidden sm:flex items-center justify-center rounded-xl h-10 w-10 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors hover:bg-primary/20">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full border-2 border-primary overflow-hidden shadow-inner">
+<img alt="User avatar" data-alt="Developer profile picture with dark aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFEar9xAT0lHRq_9W8LYgdc7buJOhQk9m67ogfNMwX_-A_Yh68o3MMwe1tndotL2xqAC72RNe15PkcvzQf92oqRcZBZ7bkeyUhmVl9bDbhVf9xpv4xOrlA1ooauF9RxprMV0AXOoitlmhRvb8LfWiTBzt6N0QdybqKywcNMyN_BDl9hMZOvA1LDIm_W-IatwVbWhMxw74plyyn4P0iggouCHnhEgqzO4wW0IPfJkCI_wU9CoS4qpAuEq4hftuyypXJwDQzYGBSxmE"/>
 </div>
 </div>
 </div>
 </div>
 </header>
-<div class="flex max-w-[1440px] mx-auto min-h-[calc(100-64px)]">
-<!-- Sidebar Navigation -->
-<aside class="hidden md:flex w-64 flex-col border-r border-primary/10 p-4 gap-2">
-<div class="mb-6 px-4">
-<p class="text-xs font-bold uppercase tracking-widest text-primary/50">Main Menu</p>
+<main class="max-w-7xl mx-auto px-6 lg:px-20 py-8">
+<!-- Hero Section -->
+<div class="mb-10">
+<div class="flex items-center gap-2 text-primary font-semibold text-sm uppercase tracking-widest mb-2">
+<span class="material-symbols-outlined text-sm">precision_manufacturing</span>
+<span>Engine v2.4.0-Stable</span>
 </div>
-<nav class="flex flex-col gap-1">
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white font-medium" href="#">
-<span class="material-symbols-outlined">dashboard</span> Dashboard
-                </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
-<span class="material-symbols-outlined">bar_chart</span> Analytics
-                </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
-<span class="material-symbols-outlined">folder</span> Projects
-                </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
-<span class="material-symbols-outlined">group</span> Team
-                </a>
-<div class="mt-8 mb-2 px-4">
-<p class="text-xs font-bold uppercase tracking-widest text-primary/50">System</p>
+<h1 class="text-4xl lg:text-5xl font-black tracking-tight mb-4">Feature Showcase - Engine Deep-Dive</h1>
+<p class="text-slate-600 dark:text-slate-400 text-lg max-w-2xl">
+                Technical precision and validation logic for high-performance markdown rendering. Explore how our AST parser handles complex UI components.
+            </p>
 </div>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
-<span class="material-symbols-outlined">account_balance_wallet</span> Billing
-                </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
-<span class="material-symbols-outlined">settings</span> Configuration
-                </a>
-</nav>
-</aside>
-<!-- Main Content Area -->
-<main class="flex-1 grid-bg p-6 lg:p-8 relative">
-<!-- Metric Cards -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 shadow-sm">
-<div class="flex justify-between items-start mb-4">
-<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Revenue</p>
-<span class="material-symbols-outlined text-primary">payments</span>
+<!-- Navigation Tabs -->
+<div class="border-b border-slate-200 dark:border-slate-800 mb-8 flex gap-8">
+<button class="border-b-2 border-primary px-1 pb-4 text-sm font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">layers</span>
+                Interactive Demo
+            </button>
+<button class="border-b-2 border-transparent px-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">code_blocks</span>
+                Engine Logic
+            </button>
+<button class="border-b-2 border-transparent px-1 pb-4 text-sm font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">rule</span>
+                Validation Rules
+            </button>
 </div>
-<p class="text-2xl font-bold mb-1">$128,430</p>
-<p class="text-xs font-semibold text-emerald-500 flex items-center gap-1">
-<span class="material-symbols-outlined text-xs">trending_up</span> +12.5% <span class="font-normal text-slate-400">vs last month</span>
-</p>
-</div>
-<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 shadow-sm">
-<div class="flex justify-between items-start mb-4">
-<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Active Users</p>
-<span class="material-symbols-outlined text-primary">person_check</span>
-</div>
-<p class="text-2xl font-bold mb-1">42.5k</p>
-<p class="text-xs font-semibold text-emerald-500 flex items-center gap-1">
-<span class="material-symbols-outlined text-xs">trending_up</span> +5.2% <span class="font-normal text-slate-400">vs last month</span>
-</p>
-</div>
-<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 shadow-sm">
-<div class="flex justify-between items-start mb-4">
-<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Conversion Rate</p>
-<span class="material-symbols-outlined text-primary">bolt</span>
-</div>
-<p class="text-2xl font-bold mb-1">3.2%</p>
-<p class="text-xs font-semibold text-rose-500 flex items-center gap-1">
-<span class="material-symbols-outlined text-xs">trending_down</span> -1.1% <span class="font-normal text-slate-400">vs last month</span>
-</p>
-</div>
-<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 shadow-sm">
-<div class="flex justify-between items-start mb-4">
-<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Avg. Session</p>
-<span class="material-symbols-outlined text-primary">timer</span>
-</div>
-<p class="text-2xl font-bold mb-1">12m 45s</p>
-<p class="text-xs font-semibold text-emerald-500 flex items-center gap-1">
-<span class="material-symbols-outlined text-xs">trending_up</span> +0.8% <span class="font-normal text-slate-400">vs last month</span>
-</p>
+<!-- Split Screen Content -->
+<div class="grid lg:grid-cols-2 gap-8 items-start">
+<!-- Left Side: Interactive Demo (Booking Form) -->
+<div class="space-y-6">
+<div class="bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xl">
+<div class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">edit_note</span>
+                            Component Preview: Booking Form
+                        </h3>
+<div class="flex gap-1.5">
+<div class="w-3 h-3 rounded-full bg-red-400/50"></div>
+<div class="w-3 h-3 rounded-full bg-yellow-400/50"></div>
+<div class="w-3 h-3 rounded-full bg-green-400/50"></div>
 </div>
 </div>
-<!-- Spotlight Target Area: Project Statistics -->
-<div class="relative">
-<!-- Visual highlight layer -->
-<div class="absolute -inset-2 spotlight-mask rounded-xl pointer-events-none z-20"></div>
-<div class="relative z-30 p-6 rounded-xl border-2 border-primary bg-white dark:bg-background-dark shadow-2xl">
-<div class="flex items-center justify-between mb-8">
+<div class="p-8 relative">
+<!-- Simulated Booking Form -->
+<div class="space-y-4 opacity-50 pointer-events-none select-none">
+<div class="grid grid-cols-2 gap-4">
 <div>
-<h3 class="text-xl font-bold">Project Statistics</h3>
-<p class="text-sm text-slate-500 dark:text-slate-400">Global completion rates by day</p>
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Check-in</label>
+<div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">Oct 24, 2024</div>
 </div>
-<div class="flex gap-2">
-<button class="px-3 py-1 text-xs font-medium rounded bg-primary/10 text-primary">Week</button>
-<button class="px-3 py-1 text-xs font-medium rounded hover:bg-primary/10 transition-colors">Month</button>
-</div>
-</div>
-<div class="flex items-end gap-4 h-64 px-4">
-<div class="flex-1 flex flex-col items-center gap-2 group">
-<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 60%"></div>
-<span class="text-xs font-bold text-slate-400">Mon</span>
-</div>
-<div class="flex-1 flex flex-col items-center gap-2 group">
-<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 45%"></div>
-<span class="text-xs font-bold text-slate-400">Tue</span>
-</div>
-<div class="flex-1 flex flex-col items-center gap-2 group">
-<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 85%"></div>
-<span class="text-xs font-bold text-slate-400">Wed</span>
-</div>
-<div class="flex-1 flex flex-col items-center gap-2 group">
-<div class="w-full bg-primary rounded-t-lg shadow-[0_0_20px_rgba(236,91,19,0.3)]" style="height: 70%"></div>
-<span class="text-xs font-bold text-primary">Thu</span>
-</div>
-<div class="flex-1 flex flex-col items-center gap-2 group">
-<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 55%"></div>
-<span class="text-xs font-bold text-slate-400">Fri</span>
-</div>
-<div class="flex-1 flex flex-col items-center gap-2 group">
-<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 30%"></div>
-<span class="text-xs font-bold text-slate-400">Sat</span>
-</div>
-<div class="flex-1 flex flex-col items-center gap-2 group">
-<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 40%"></div>
-<span class="text-xs font-bold text-slate-400">Sun</span>
+<div>
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Check-out</label>
+<div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">Oct 28, 2024</div>
 </div>
 </div>
-</div>
-<!-- Draggable Spotlight Tooltip -->
-<div class="absolute -bottom-4 left-1/2 -translate-x-1/2 translate-y-full z-50 w-72 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-primary/20 overflow-hidden cursor-move">
-<div class="bg-primary px-4 py-2 flex items-center justify-between cursor-grab active:cursor-grabbing">
-<span class="text-[10px] font-bold uppercase tracking-wider text-white/80">Guide Spotlight</span>
-<div class="flex gap-1">
-<div class="size-1.5 rounded-full bg-white/40"></div>
-<div class="size-1.5 rounded-full bg-white/40"></div>
+<div>
+<label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Guests</label>
+<div class="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 border border-slate-200 dark:border-slate-700">2 Adults, 1 Child</div>
 </div>
 </div>
-<div class="p-5">
-<h4 class="font-bold text-primary mb-1">Step 1 of 4: Welcome to the Dashboard</h4>
-<p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                            This chart displays your team's weekly progress. You can hover over individual bars to see detailed metrics for each day.
+<!-- Active Spotlight Area -->
+<div class="mt-6 p-6 border-2 border-primary rounded-xl bg-primary/5 relative ring-4 ring-primary/20">
+<label class="block text-xs font-bold uppercase tracking-wider text-primary mb-2">Room Type Selection</label>
+<div class="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-lg border border-primary/30">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">king_bed</span>
+<div>
+<div class="font-bold">Deluxe Ocean Suite</div>
+<div class="text-xs text-slate-500">King Bed • 45m² • Sea View</div>
+</div>
+</div>
+<div class="text-right">
+<div class="font-bold text-primary">$299</div>
+<div class="text-[10px] text-slate-500 uppercase">per night</div>
+</div>
+</div>
+<!-- Active Spotlight Tooltip -->
+<div class="absolute -top-12 -right-4 bg-primary text-white p-3 rounded-xl shadow-2xl flex flex-col gap-1 max-w-[200px] animate-bounce-subtle">
+<div class="text-[10px] font-bold uppercase opacity-80 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">info</span> Spotlight Tooltip
+                                </div>
+<p class="text-xs font-medium leading-tight">This component uses the <code class="bg-black/20 px-1 rounded">::form-select</code> markdown extension.</p>
+<div class="absolute bottom-[-8px] right-8 w-4 h-4 bg-primary rotate-45"></div>
+</div>
+</div>
+<div class="mt-6 flex justify-end gap-3 opacity-50">
+<div class="px-6 py-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-sm font-bold">Cancel</div>
+<div class="px-6 py-2 rounded-lg bg-primary text-white text-sm font-bold">Book Now</div>
+</div>
+</div>
+</div>
+<div class="bg-primary/10 border border-primary/20 rounded-xl p-4 flex gap-4 items-start">
+<span class="material-symbols-outlined text-primary mt-0.5">lightbulb</span>
+<div>
+<h4 class="font-bold text-sm text-primary mb-1">Designer Tip</h4>
+<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                            Spotlights can be triggered via <code>data-spotlight-id</code> attributes in your markdown structure for precise onboarding steps.
                         </p>
-<div class="flex items-center justify-between">
-<button class="text-xs font-bold text-slate-400 hover:text-primary transition-colors">Skip Guide</button>
-<div class="flex gap-2">
-<button class="px-3 py-1.5 text-xs font-bold border border-primary/30 rounded-lg hover:bg-primary/5">Back</button>
-<button class="px-3 py-1.5 text-xs font-bold bg-primary text-white rounded-lg shadow-md shadow-primary/20">Next Step</button>
 </div>
 </div>
 </div>
-<!-- Indicator Arrow -->
-<div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-l border-t border-primary/20 rotate-45"></div>
+<!-- Right Side: Engine Logic & Validation (Code View) -->
+<div class="space-y-6">
+<div class="bg-slate-900 rounded-xl border border-slate-700 overflow-hidden shadow-2xl font-mono text-sm leading-relaxed">
+<div class="bg-slate-800 px-4 py-2 flex items-center justify-between border-b border-slate-700">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-blue-400 text-sm">description</span>
+<span class="text-slate-300 text-xs">booking_form.md</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[10px] text-slate-500">UTF-8</span>
+<span class="material-symbols-outlined text-slate-400 text-lg cursor-pointer">content_copy</span>
 </div>
 </div>
-<!-- More Dashboard Content (Faded/Background) -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12 opacity-40">
-<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5">
-<h4 class="font-bold mb-4">Recent Transactions</h4>
-<div class="space-y-4">
-<div class="flex items-center gap-4">
-<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined">shopping_cart</span>
+<div class="p-0 overflow-x-auto">
+<table class="w-full border-collapse">
+<tbody>
+<tr class="group">
+<td class="w-10 text-right pr-4 text-slate-600 select-none bg-slate-800/30">1</td>
+<td class="pl-4 py-1 text-slate-400"><span class="text-pink-400">---</span></td>
+</tr>
+<tr class="group">
+<td class="w-10 text-right pr-4 text-slate-600 select-none bg-slate-800/30">2</td>
+<td class="pl-4 py-1 text-slate-400"><span class="text-blue-300">layout</span>: <span class="text-green-300">modal</span></td>
+</tr>
+<tr class="group">
+<td class="w-10 text-right pr-4 text-slate-600 select-none bg-slate-800/30">3</td>
+<td class="pl-4 py-1 text-slate-400"><span class="text-pink-400">---</span></td>
+</tr>
+<tr class="group">
+<td class="w-10 text-right pr-4 text-slate-600 select-none bg-slate-800/30">4</td>
+<td class="pl-4 py-1 text-slate-400"></td>
+</tr>
+<tr class="group bg-red-900/20 border-l-4 border-red-500">
+<td class="w-10 text-right pr-4 text-red-400/50 select-none bg-red-900/10">5</td>
+<td class="pl-4 py-1 text-white">::form-select { <span class="text-red-400 font-bold underline decoration-wavy">id: "room_selection"</span> }</td>
+</tr>
+<tr class="group bg-red-900/10">
+<td class="w-10 text-right pr-4 text-slate-600 select-none bg-slate-800/30"></td>
+<td class="pl-14 py-2">
+<div class="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mr-4">
+<div class="flex items-center gap-2 text-red-400 font-bold text-[10px] mb-1">
+<span class="material-symbols-outlined text-xs">error</span>
+                                                ERR_MD_042: DEPRECATED_PROPERTY
+                                            </div>
+<p class="text-slate-300 text-xs">Property 'id' is deprecated. Use <code class="text-primary">spotlightId</code> for interactive targeting instead.</p>
 </div>
-<div class="flex-1">
-<p class="text-sm font-bold">AWS Enterprise</p>
-<p class="text-xs text-slate-400">Subscription Renewal</p>
-</div>
-<p class="text-sm font-bold">-$499.00</p>
-</div>
-<div class="flex items-center gap-4">
-<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined">account_balance</span>
-</div>
-<div class="flex-1">
-<p class="text-sm font-bold">Stripe Payout</p>
-<p class="text-xs text-slate-400">Weekly disbursement</p>
-</div>
-<p class="text-sm font-bold text-emerald-500">+$24,120.00</p>
-</div>
-</div>
-</div>
-<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5">
-<h4 class="font-bold mb-4">Live Activity</h4>
-<div class="flex items-center justify-center h-24">
-<div class="flex gap-1 items-end h-8">
-<div class="w-1 bg-primary rounded-full animate-pulse h-4"></div>
-<div class="w-1 bg-primary rounded-full animate-pulse h-6" style="animation-delay: 0.1s"></div>
-<div class="w-1 bg-primary rounded-full animate-pulse h-3" style="animation-delay: 0.2s"></div>
-<div class="w-1 bg-primary rounded-full animate-pulse h-8" style="animation-delay: 0.3s"></div>
-<div class="w-1 bg-primary rounded-full animate-pulse h-5" style="animation-delay: 0.4s"></div>
+</td>
+</tr>
+<tr class="group">
+<td class="w-10 text-right pr-4 text-slate-600 select-none bg-slate-800/30">6</td>
+<td class="pl-8 py-1 text-slate-400">- <span class="text-blue-300">label</span>: "Deluxe Ocean Suite"</td>
+</tr>
+<tr class="group">
+<td class="w-10 text-right pr-4 text-slate-600 select-none bg-slate-800/30">7</td>
+<td class="pl-8 py-1 text-slate-400">- <span class="text-blue-300">price</span>: 299</td>
+</tr>
+<tr class="group">
+<td class="w-10 text-right pr-4 text-slate-600 select-none bg-slate-800/30">8</td>
+<td class="pl-8 py-1 text-slate-400">- <span class="text-blue-300">icon</span>: king_bed</td>
+</tr>
+<tr class="group">
+<td class="w-10 text-right pr-4 text-slate-600 select-none bg-slate-800/30">9</td>
+<td class="pl-4 py-1 text-white">::end</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
+<!-- Engine Health & Stats -->
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="text-[10px] font-bold text-slate-500 uppercase mb-2">Parser Latency</div>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-black text-primary">12ms</span>
+<span class="text-[10px] text-green-500 font-bold mb-1 flex items-center">
+<span class="material-symbols-outlined text-xs">trending_down</span> 4%
+                            </span>
 </div>
 </div>
+<div class="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="text-[10px] font-bold text-slate-500 uppercase mb-2">AST Node Count</div>
+<div class="flex items-end gap-2">
+<span class="text-2xl font-black text-slate-800 dark:text-slate-100">1,402</span>
+<span class="text-[10px] text-slate-500 font-bold mb-1">Nodes</span>
+</div>
+</div>
+</div>
+<!-- Validation Issues Summary -->
+<div class="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+<h4 class="font-bold text-sm mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-yellow-500">warning</span>
+                        Engine Suggestions (2)
+                    </h4>
+<ul class="space-y-4">
+<li class="flex gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0"></div>
+<div>
+<p class="text-xs font-bold mb-0.5">Line 5: Missing Spotlight Target</p>
+<p class="text-xs text-slate-500">The component <code>form-select</code> lacks a valid focus-state descriptor. This may affect accessibility.</p>
+</div>
+</li>
+<li class="flex gap-3">
+<div class="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 shrink-0"></div>
+<div>
+<p class="text-xs font-bold mb-0.5">Optimisation Hint</p>
+<p class="text-xs text-slate-500">Consider lazy-loading the 'king_bed' icon asset for faster initial paint.</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Call to Action -->
+<footer class="mt-20 py-12 border-t border-slate-200 dark:border-slate-800 text-center">
+<div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-xs mb-6">
+<span class="material-symbols-outlined text-sm">stars</span>
+                READY FOR PRODUCTION
+            </div>
+<h2 class="text-3xl font-black mb-4">Elevate your Markdown UX</h2>
+<p class="text-slate-500 mb-8 max-w-xl mx-auto">
+                Join 5,000+ developers using MD Spotlight Guide to build intuitive, spotlight-driven documentation and user interfaces.
+            </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+<button class="w-full sm:w-auto px-10 py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 transition-transform hover:-translate-y-1">
+                    Get Started Free
+                </button>
+<button class="w-full sm:w-auto px-10 py-4 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-xl font-bold border border-slate-300 dark:border-slate-700">
+                    View Enterprise Pricing
+                </button>
+</div>
+</footer>
 </main>
-</div>
+<style>
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-bounce-subtle {
+            animation: bounce-subtle 2s ease-in-out infinite;
+        }
+    </style>
 </body></html>

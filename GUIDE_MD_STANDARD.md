@@ -52,6 +52,7 @@ id: create-booking-guide
 title: Create Booking Walkthrough
 buttonLabel: Start Create Guide
 tooltipTitle: Create Booking completed
+tooltipPlacement: auto
 overlayColor: "rgba(0,43,69,0.22)"
 highlightColor: "rgb(255,199,0)"
 highlightStyle: line
@@ -78,11 +79,13 @@ Fields:
 - `title: string` required
 - `buttonLabel: string` optional
 - `tooltipTitle: string` optional
+- `tooltipPlacement: auto | top | right | bottom | left` optional, default `auto`
+- `tooltipPosition: auto | top | right | bottom | left` optional alias of `tooltipPlacement`
 - `overlayColor: string` optional CSS color
 - `highlightColor: string` optional CSS color
 - `highlightStyle: line | dash` optional, default `line`
 - `highlightAnimation: none | color | dash | color-dash` optional, default `none`
-- `tooltipTemplate: default | glass | minimal | contrast | dashboard-orange | clean-white | commerce-dark | terminal-pop | outline-light` optional, default `default`
+- `tooltipTemplate: default | glass | minimal | contrast | dashboard-orange | clean-white | commerce-dark | terminal-pop | outline-light` optional, default `clean-white`
 - `tooltipWidth: number` optional px
 - `showHighlight: boolean` optional, default `true`
 - `draggable: boolean` optional, default `true`
@@ -125,6 +128,8 @@ Optional:
 - `advanceOn: auto | click | change | input-idle | none` (default auto)
 - `inputIdleMs: number` (used by `input-idle`, default 1500)
 - `highlightColor: string` step-level highlight border color
+- `tooltipPlacement: auto | top | right | bottom | left` step-level tooltip position
+- `tooltipPosition: auto | top | right | bottom | left` alias of `tooltipPlacement`
 - `highlightStyle: line | dash` step-level border style override
 - `highlightAnimation: none | color | dash | color-dash` step-level animation override
 - `tooltipTemplate: default | glass | minimal | contrast | dashboard-orange | clean-white | commerce-dark | terminal-pop | outline-light` step-level preset override
@@ -293,7 +298,8 @@ theme:
 - Color fallback order: `step.highlightColor` -> `frontmatter.highlightColor` -> default `rgb(255, 199, 0)`.
 - Style fallback order: `step.highlightStyle` -> `frontmatter.highlightStyle` -> `line`.
 - Animation fallback order: `step.highlightAnimation` -> `frontmatter.highlightAnimation` -> `none`.
-- Template fallback order: `step.tooltipTemplate` -> `step.theme.tooltipTemplate` -> `meta.tooltipTemplate` -> `meta.theme.tooltipTemplate` -> `default`.
+- Template fallback order: `step.tooltipTemplate` -> `step.theme.tooltipTemplate` -> `meta.tooltipTemplate` -> `meta.theme.tooltipTemplate` -> `clean-white`.
+- Placement fallback order: `step.tooltipPlacement` -> `meta.tooltipPlacement` -> `auto`.
 - Text fallback order: `step.i18n.*` -> `meta.i18n.*` -> built-in locale defaults (`en`/`tr`/`da`).
 - Theme fallback order: `step.theme.*` -> `meta.theme.*` -> internal CSS defaults.
 - If color fields are empty strings, they are treated as undefined and default behavior applies.

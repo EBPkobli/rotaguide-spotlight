@@ -63,11 +63,12 @@ description: Click Open to continue.
 | `title` | `string` | Yes | - | Missing value causes validation error |
 | `buttonLabel` | `string` | No | `"Start Guide"` | Used by `MarkdownGuideButton` |
 | `tooltipTitle` | `string` | No | `${title} completed` | Final step title |
+| `tooltipPlacement` | `auto \| top \| right \| bottom \| left` | No | `auto` | Preferred tooltip side |
 | `overlayColor` | `string` | No | `rgba(0, 43, 69, 0.22)` | Backdrop and outside mask color |
 | `highlightColor` | `string` | No | `rgb(255, 199, 0)` | Highlight stroke color |
 | `highlightStyle` | `line \| dash` | No | `line` | Also accepts `solid`, `dashed` aliases |
 | `highlightAnimation` | `none \| color \| dash \| color-dash` | No | `none` | Also accepts aliases like `off`, `dash-move` |
-| `tooltipTemplate` | `default \| glass \| minimal \| contrast \| dashboard-orange \| clean-white \| commerce-dark \| terminal-pop \| outline-light` | No | `default` | Preset tooltip design template |
+| `tooltipTemplate` | `default \| glass \| minimal \| contrast \| dashboard-orange \| clean-white \| commerce-dark \| terminal-pop \| outline-light` | No | `clean-white` | Preset tooltip design template |
 | `tooltipWidth` | `number` | No | `360` | Tooltip max rendered width is `540` |
 | `showHighlight` | `boolean` | No | `true` | Global default, step can override |
 | `draggable` | `boolean` | No | `true` | Global default, step can override |
@@ -102,6 +103,8 @@ description: Click Open to continue.
 | `showAutoAdvanceProgress` | `boolean` | `true` | Shows timer progress bar |
 | `showTimerLoading` | `boolean` | - | Alias of `showAutoAdvanceProgress` |
 | `showHighlight` | `boolean` | inherit | Step-level override |
+| `tooltipPlacement` | `auto \| top \| right \| bottom \| left` | inherit | Step-level tooltip side |
+| `tooltipPosition` | `auto \| top \| right \| bottom \| left` | - | Alias of `tooltipPlacement` |
 | `highlightColor` | `string` | inherit | Step-level color override |
 | `highlightStyle` | `line \| dash` | inherit | Step-level style override |
 | `highlightAnimation` | `none \| color \| dash \| color-dash` | inherit | Step-level animation override |
@@ -163,6 +166,8 @@ Examples:
 - Dragging:
   - enabled by default (`draggable: true`)
   - tooltip can be dragged when enabled
+- Placement fallback order:
+  - `step.tooltipPlacement` -> `meta.tooltipPlacement` -> `auto`
 
 ## 8. Highlight System
 

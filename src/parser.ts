@@ -12,6 +12,7 @@ import type {
   GuideSourceFormat,
   GuideStep,
   GuideTheme,
+  GuideTooltipPlacement,
   GuideTooltipTemplate,
 } from "./types";
 import { validateGuideDefinition } from "./validate";
@@ -194,6 +195,17 @@ function parseHighlightAnimation(value: unknown): GuideHighlightAnimation | unde
   return normalized as GuideHighlightAnimation;
 }
 
+function parseTooltipPlacement(value: unknown): GuideTooltipPlacement | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return undefined;
+  if (normalized === "up" || normalized === "above") return "top";
+  if (normalized === "down" || normalized === "below") return "bottom";
+  if (normalized === "start") return "left";
+  if (normalized === "end") return "right";
+  return normalized as GuideTooltipPlacement;
+}
+
 function parseTooltipTemplate(value: unknown): GuideTooltipTemplate | undefined {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim().toLowerCase();
@@ -371,6 +383,9 @@ function buildMetaFromRaw(raw: Record<string, unknown>): GuideMeta {
     title: toOptionalTrimmedString(raw.title) ?? "",
     buttonLabel: toOptionalTrimmedString(raw.buttonLabel),
     tooltipTitle: toOptionalTrimmedString(raw.tooltipTitle),
+    tooltipPlacement: parseTooltipPlacement(
+      raw.tooltipPlacement ?? raw.tooltipPosition
+    ),
     overlayColor: toOptionalTrimmedString(raw.overlayColor),
     highlightColor: toOptionalTrimmedString(raw.highlightColor),
     tooltipWidth: typeof raw.tooltipWidth === "number" ? raw.tooltipWidth : undefined,
@@ -418,6 +433,9 @@ function parseStep(
     title: toStringOrEmpty(parsed.title) || headingLabel,
     kind: (toStringOrEmpty(parsed.kind) || "Action") as GuideKind,
     description: toStringOrEmpty(parsed.description),
+    tooltipPlacement: parseTooltipPlacement(
+      parsed.tooltipPlacement ?? parsed.tooltipPosition
+    ),
     allowSkip:
       typeof parsed.allowSkip === "boolean" ? parsed.allowSkip : undefined,
     skippable:

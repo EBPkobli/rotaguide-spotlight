@@ -3,6 +3,7 @@ import {
   GUIDE_HIGHLIGHT_ANIMATIONS,
   GUIDE_HIGHLIGHT_STYLES,
   GUIDE_KINDS,
+  GUIDE_TOOLTIP_PLACEMENTS,
   GUIDE_TOOLTIP_TEMPLATES,
   type GuideDefinition,
   type GuideIssue,
@@ -20,6 +21,7 @@ function normalizeStep(step: GuideStep): GuideStep {
     target: step.target.trim(),
     title: step.title.trim(),
     description: step.description.trim(),
+    tooltipPlacement: step.tooltipPlacement,
     allowSkip: step.allowSkip,
     skippable: step.skippable,
     advanceOn: step.advanceOn,
@@ -72,6 +74,17 @@ export function validateGuideDefinition(
       code: "GUIDE_META_INVALID_FIELD",
       message: `Guide meta.highlightAnimation is invalid: ${guide.meta.highlightAnimation}.`,
       hint: `Allowed: ${GUIDE_HIGHLIGHT_ANIMATIONS.join(", ")}`,
+    });
+  }
+
+  if (
+    typeof guide.meta.tooltipPlacement === "string" &&
+    !GUIDE_TOOLTIP_PLACEMENTS.includes(guide.meta.tooltipPlacement)
+  ) {
+    issues.push({
+      code: "GUIDE_META_INVALID_FIELD",
+      message: `Guide meta.tooltipPlacement is invalid: ${guide.meta.tooltipPlacement}.`,
+      hint: `Allowed: ${GUIDE_TOOLTIP_PLACEMENTS.join(", ")}`,
     });
   }
 
@@ -235,6 +248,18 @@ export function validateGuideDefinition(
         line,
         message: `Step ${step.id} has invalid highlightAnimation: ${step.highlightAnimation}.`,
         hint: `Allowed: ${GUIDE_HIGHLIGHT_ANIMATIONS.join(", ")}`,
+      });
+    }
+
+    if (
+      typeof step.tooltipPlacement === "string" &&
+      !GUIDE_TOOLTIP_PLACEMENTS.includes(step.tooltipPlacement)
+    ) {
+      issues.push({
+        code: "GUIDE_STEP_INVALID_FIELD",
+        line,
+        message: `Step ${step.id} has invalid tooltipPlacement: ${step.tooltipPlacement}.`,
+        hint: `Allowed: ${GUIDE_TOOLTIP_PLACEMENTS.join(", ")}`,
       });
     }
 

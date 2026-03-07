@@ -19,6 +19,7 @@ export {
   GUIDE_SOURCE_FORMATS,
   GUIDE_HIGHLIGHT_STYLES,
   GUIDE_HIGHLIGHT_ANIMATIONS,
+  GUIDE_TOOLTIP_PLACEMENTS,
   GUIDE_TOOLTIP_TEMPLATES,
   type GuideAdvanceMode,
   type GuideDefinition,
@@ -30,6 +31,7 @@ export {
   type GuideKind,
   type GuideMeta,
   type GuideStep,
+  type GuideTooltipPlacement,
   type GuideTheme,
   type GuideTooltipTemplate,
 } from "./types";
