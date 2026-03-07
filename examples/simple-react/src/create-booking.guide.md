@@ -1,6 +1,6 @@
 ---
 id: full-feature-showcase
-title: md-spotlight-guide-tool Full Feature Walkthrough
+title: RotaGuide Spotlight Full Feature Walkthrough
 buttonLabel: Start Full Feature Guide
 tooltipTemplate: contrast
 tooltipTitle: You completed all feature steps

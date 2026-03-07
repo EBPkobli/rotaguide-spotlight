@@ -1,12 +1,34 @@
 {
-  "name": "md-spotlight-guide-tool",
+  "name": "@rotaguide/spotlight",
   "version": "0.1.0",
-  "description": "Markdown-driven step-by-step spotlight guide overlay for React apps",
+  "description": "RotaGuide Spotlight: markdown, JSON, and YAML-driven spotlight walkthroughs for React apps",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EBPkobli/rotaguide-spotlight.git"
+  },
+  "homepage": "https://github.com/EBPkobli/rotaguide-spotlight#readme",
+  "bugs": {
+    "url": "https://github.com/EBPkobli/rotaguide-spotlight/issues"
+  },
+  "keywords": [
+    "react",
+    "spotlight",
+    "tour",
+    "walkthrough",
+    "guide",
+    "markdown",
+    "yaml",
+    "json",
+    "product-tour"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist",
     "README.md",

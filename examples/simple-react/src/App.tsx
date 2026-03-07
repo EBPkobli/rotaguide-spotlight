@@ -74,16 +74,25 @@ buttonLabel: Placement ${placement}
 i18n:
   locale: en
 showHighlight: true
+highlightStyle: line
+highlightAnimation: none
 ---
 
 ## Step: Placement Demo
 \`\`\`yaml
 id: placement-${placement}
 target: placement-demo-target
+componentIds:
+  - placement-btn-top
+  - placement-btn-right
+  - placement-btn-left
+  - placement-btn-bottom
 kind: Action
 title: "Tooltip placement: ${placement}"
-description: "This preview locks the tooltip to ${placement} side of the highlighted target."
+description: "This preview locks the tooltip to ${placement} side and spotlights all placement buttons."
 tooltipPlacement: ${placement}
+highlightStyle: line
+highlightAnimation: none
 advanceOn: none
 skippable: true
 \`\`\`
@@ -172,7 +181,7 @@ export default function App() {
       <div className="demo-shell">
         <header className="hero" {...guideTarget("guide-start-panel")}>
           <div className="hero-badge">New: Markdown + JSON + YAML Support</div>
-          <h1 className="hero-title">MD Spotlight Guide Tool</h1>
+          <h1 className="hero-title">RotaGuide Spotlight</h1>
           <p className="hero-subtitle">
             Create powerful, interactive product walkthroughs using markdown-driven steps with
             strict validation and real-time overlays.
@@ -525,13 +534,69 @@ export default function App() {
           </div>
 
           <div className="placement-actions">
-            <MarkdownGuideButton content={placementGuides.top} format="markdown" label="Top" />
-            <MarkdownGuideButton content={placementGuides.right} format="markdown" label="Right" />
-            <MarkdownGuideButton content={placementGuides.left} format="markdown" label="Left" />
+            <MarkdownGuideButton
+              content={placementGuides.top}
+              format="markdown"
+              label="Top"
+              renderButton={({ onClick, label, disabled }) => (
+                <button
+                  type="button"
+                  className="msgt-btn msgt-btn-primary"
+                  {...guideTarget("placement-btn-top")}
+                  onClick={onClick}
+                  disabled={disabled}
+                >
+                  {label}
+                </button>
+              )}
+            />
+            <MarkdownGuideButton
+              content={placementGuides.right}
+              format="markdown"
+              label="Right"
+              renderButton={({ onClick, label, disabled }) => (
+                <button
+                  type="button"
+                  className="msgt-btn msgt-btn-primary"
+                  {...guideTarget("placement-btn-right")}
+                  onClick={onClick}
+                  disabled={disabled}
+                >
+                  {label}
+                </button>
+              )}
+            />
+            <MarkdownGuideButton
+              content={placementGuides.left}
+              format="markdown"
+              label="Left"
+              renderButton={({ onClick, label, disabled }) => (
+                <button
+                  type="button"
+                  className="msgt-btn msgt-btn-primary"
+                  {...guideTarget("placement-btn-left")}
+                  onClick={onClick}
+                  disabled={disabled}
+                >
+                  {label}
+                </button>
+              )}
+            />
             <MarkdownGuideButton
               content={placementGuides.bottom}
               format="markdown"
               label="Bottom"
+              renderButton={({ onClick, label, disabled }) => (
+                <button
+                  type="button"
+                  className="msgt-btn msgt-btn-primary"
+                  {...guideTarget("placement-btn-bottom")}
+                  onClick={onClick}
+                  disabled={disabled}
+                >
+                  {label}
+                </button>
+              )}
             />
           </div>
         </section>

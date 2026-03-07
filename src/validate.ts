@@ -14,11 +14,37 @@ function hasText(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function normalizeTargets(target: string, targets?: string[]): string[] {
+  const unique = new Set<string>();
+  const ordered: string[] = [];
+
+  if (hasText(target)) {
+    const trimmed = target.trim();
+    unique.add(trimmed);
+    ordered.push(trimmed);
+  }
+
+  if (Array.isArray(targets)) {
+    targets.forEach((entry) => {
+      if (!hasText(entry)) return;
+      const trimmed = entry.trim();
+      if (unique.has(trimmed)) return;
+      unique.add(trimmed);
+      ordered.push(trimmed);
+    });
+  }
+
+  return ordered;
+}
+
 function normalizeStep(step: GuideStep): GuideStep {
+  const normalizedTargets = normalizeTargets(step.target, step.targets);
+
   return {
     ...step,
     id: step.id.trim(),
-    target: step.target.trim(),
+    target: normalizedTargets[0] ?? "",
+    targets: normalizedTargets.length > 0 ? normalizedTargets : undefined,
     title: step.title.trim(),
     description: step.description.trim(),
     tooltipPlacement: step.tooltipPlacement,
@@ -157,12 +183,12 @@ export function validateGuideDefinition(
     }
     seen.add(step.id);
 
-    if (!hasText(step.target)) {
+    if (!Array.isArray(step.targets) || step.targets.length === 0) {
       issues.push({
         code: "GUIDE_STEP_MISSING_FIELD",
         line,
         message: `Step ${step.id} is missing target selector.`,
-        hint: "Set target: [data-click-guide=\"my-target\"]",
+        hint: "Set target: [data-click-guide=\"my-target\"] or targets: [\"id-1\", \"id-2\"]",
       });
     }
 

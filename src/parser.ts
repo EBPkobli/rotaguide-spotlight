@@ -167,6 +167,45 @@ function toOptionalNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
+function parseStringList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+      .filter((entry) => entry.length > 0);
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+    if (!trimmed.includes(",")) return [trimmed];
+    return trimmed
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0);
+  }
+
+  return [];
+}
+
+function collectStepTargets(parsed: Record<string, unknown>): string[] {
+  const combined = [
+    ...parseStringList(parsed.targets),
+    ...parseStringList(parsed.targetIds),
+    ...parseStringList(parsed.componentIds),
+    ...parseStringList(parsed.components),
+    ...parseStringList(parsed.componentId),
+  ];
+
+  const unique = new Set<string>();
+  const ordered: string[] = [];
+  combined.forEach((entry) => {
+    if (unique.has(entry)) return;
+    unique.add(entry);
+    ordered.push(entry);
+  });
+  return ordered;
+}
+
 function parseHighlightStyle(value: unknown): GuideHighlightStyle | undefined {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim().toLowerCase();
@@ -423,13 +462,18 @@ function parseStep(
       : undefined;
   const i18n = parseMetaI18n(parsed);
   const theme = parseMetaTheme(parsed);
+  const aliasedTargets = collectStepTargets(parsed);
+  const rawPrimaryTarget = toOptionalTrimmedString(parsed.target);
+  const target = rawPrimaryTarget ?? aliasedTargets[0] ?? "";
+  const targets = Array.from(new Set([target, ...aliasedTargets].filter((entry) => entry.length > 0)));
 
   return {
     id:
       typeof parsed.id === "string" && parsed.id.trim().length > 0
         ? parsed.id.trim()
         : defaultId,
-    target: toStringOrEmpty(parsed.target),
+    target,
+    targets: targets.length > 0 ? targets : undefined,
     title: toStringOrEmpty(parsed.title) || headingLabel,
     kind: (toStringOrEmpty(parsed.kind) || "Action") as GuideKind,
     description: toStringOrEmpty(parsed.description),

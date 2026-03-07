@@ -112,6 +112,7 @@ export interface GuideMeta {
 export interface GuideStep {
   id: string;
   target: string;
+  targets?: string[];
   title: string;
   kind: GuideKind;
   description: string;

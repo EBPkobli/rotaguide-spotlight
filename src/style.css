@@ -7,6 +7,16 @@
 .msgt-overlay-backdrop {
   position: absolute;
   inset: 0;
+  z-index: 0;
+}
+
+.msgt-overlay-backdrop-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .msgt-highlight {
@@ -20,6 +30,7 @@
   position: absolute;
   pointer-events: none;
   overflow: visible;
+  z-index: 1;
 }
 
 .msgt-highlight-stroke-rect {
@@ -102,6 +113,7 @@
   --msgt-timer-fill-bg: rgb(26, 99, 245);
   position: absolute;
   pointer-events: auto;
+  z-index: 2;
   background: var(--msgt-tooltip-bg);
   border: 1px solid var(--msgt-tooltip-border);
   border-radius: var(--msgt-tooltip-border-radius);

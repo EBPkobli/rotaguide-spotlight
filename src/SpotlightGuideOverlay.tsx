@@ -46,6 +46,7 @@ const HIGHLIGHT_RADIUS_PX = 10;
 const TOOLTIP_MARGIN_PX = 16;
 const TOOLTIP_GAP_PX = 12;
 const OVERLAY_OPEN_EVENT = "msgt:overlay-open";
+const MIN_OVERLAY_Z_INDEX = 2147483000;
 type ResolvedAdvanceMode = "click" | "change" | "input-idle" | "none";
 
 interface StepRequirements {
@@ -426,15 +427,65 @@ function getFocusableTarget(target: HTMLElement): HTMLElement | null {
   return target.querySelector<HTMLElement>("input,textarea,select,button,[role='combobox']");
 }
 
+function resolveStepTargetNames(step: GuideStep): string[] {
+  const unique = new Set<string>();
+  const ordered: string[] = [];
+
+  const add = (value: string | undefined) => {
+    if (!value) return;
+    const trimmed = value.trim();
+    if (!trimmed || unique.has(trimmed)) return;
+    unique.add(trimmed);
+    ordered.push(trimmed);
+  };
+
+  add(step.target);
+  if (Array.isArray(step.targets)) {
+    step.targets.forEach(add);
+  }
+
+  return ordered;
+}
+
+function queryTargetElement(target: string): HTMLElement | null {
+  const selector = resolveTargetSelector(target);
+  if (!selector) return null;
+
+  try {
+    return document.querySelector<HTMLElement>(selector);
+  } catch {
+    return null;
+  }
+}
+
+function resolveVisibleTargets(step: GuideStep): HTMLElement[] {
+  const targetNames = resolveStepTargetNames(step);
+  const unique = new Set<HTMLElement>();
+  const resolved: HTMLElement[] = [];
+
+  targetNames.forEach((target) => {
+    const element = queryTargetElement(target);
+    if (!element || !isElementVisible(element) || unique.has(element)) return;
+    unique.add(element);
+    resolved.push(element);
+  });
+
+  return resolved;
+}
+
+function targetListHasInputValue(targets: HTMLElement[]): boolean {
+  return targets.some(targetHasInputValue);
+}
+
 export function SpotlightGuideOverlay({
   open,
   guide,
   onClose,
-  zIndex = 3000,
+  zIndex = MIN_OVERLAY_Z_INDEX,
   className,
 }: SpotlightGuideOverlayProps) {
   const [stepIndex, setStepIndex] = useState(0);
-  const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
+  const [targetRects, setTargetRects] = useState<TargetRect[]>([]);
   const [targetMissing, setTargetMissing] = useState(false);
   const [hint, setHint] = useState("");
   const [manualPos, setManualPos] = useState<Position | null>(null);
@@ -442,7 +493,7 @@ export function SpotlightGuideOverlay({
   const [autoAdvanceProgress, setAutoAdvanceProgress] = useState<number | null>(null);
   const [tooltipSize, setTooltipSize] = useState({ width: DEFAULT_TOOLTIP_WIDTH, height: DEFAULT_TOOLTIP_HEIGHT });
 
-  const activeTargetRef = useRef<HTMLElement | null>(null);
+  const activeTargetsRef = useRef<HTMLElement[]>([]);
   const lastFocusedStepRef = useRef<string>("");
   const lastAdvancedStepRef = useRef<string>("");
   const inputIdleTimerRef = useRef<number | null>(null);
@@ -452,9 +503,17 @@ export function SpotlightGuideOverlay({
   );
   const tooltipRef = useRef<HTMLDivElement | null>(null);
 
+  const clearActiveTargets = useCallback(() => {
+    activeTargetsRef.current.forEach((target) => {
+      target.classList.remove("msgt-guide-target-active");
+    });
+    activeTargetsRef.current = [];
+  }, []);
+
   const steps = guide.steps;
   const currentStep = steps[stepIndex];
   const finished = stepIndex >= steps.length;
+  const primaryTargetRect = targetRects[0] ?? null;
   const tooltipWidth = guide.meta.tooltipWidth ?? DEFAULT_TOOLTIP_WIDTH;
   const overlayColor = guide.meta.overlayColor ?? DEFAULT_OVERLAY_COLOR;
   const highlightColor =
@@ -496,7 +555,7 @@ export function SpotlightGuideOverlay({
 
   const tooltipPos = useMemo(() => {
     if (manualPos) return manualPos;
-    if (!targetRect || typeof window === "undefined") {
+    if (!primaryTargetRect || typeof window === "undefined") {
       return { left: TOOLTIP_MARGIN_PX, top: TOOLTIP_MARGIN_PX };
     }
 
@@ -504,35 +563,42 @@ export function SpotlightGuideOverlay({
     const tipHeight = tooltipSize.height > 0 ? tooltipSize.height : DEFAULT_TOOLTIP_HEIGHT;
     const resolvedPlacement =
       tooltipPlacement === "auto"
-        ? pickAutoPlacement(targetRect, tipWidth, tipHeight)
+        ? pickAutoPlacement(primaryTargetRect, tipWidth, tipHeight)
         : tooltipPlacement;
 
-    let x = targetRect.left;
-    let y = targetRect.top + targetRect.height + TOOLTIP_GAP_PX;
+    let x = primaryTargetRect.left;
+    let y = primaryTargetRect.top + primaryTargetRect.height + TOOLTIP_GAP_PX;
 
     if (resolvedPlacement === "top") {
-      x = targetRect.left + targetRect.width / 2 - tipWidth / 2;
-      y = targetRect.top - tipHeight - TOOLTIP_GAP_PX;
+      x = primaryTargetRect.left + primaryTargetRect.width / 2 - tipWidth / 2;
+      y = primaryTargetRect.top - tipHeight - TOOLTIP_GAP_PX;
     } else if (resolvedPlacement === "right") {
-      x = targetRect.left + targetRect.width + TOOLTIP_GAP_PX;
-      y = targetRect.top + targetRect.height / 2 - tipHeight / 2;
+      x = primaryTargetRect.left + primaryTargetRect.width + TOOLTIP_GAP_PX;
+      y = primaryTargetRect.top + primaryTargetRect.height / 2 - tipHeight / 2;
     } else if (resolvedPlacement === "left") {
-      x = targetRect.left - tipWidth - TOOLTIP_GAP_PX;
-      y = targetRect.top + targetRect.height / 2 - tipHeight / 2;
+      x = primaryTargetRect.left - tipWidth - TOOLTIP_GAP_PX;
+      y = primaryTargetRect.top + primaryTargetRect.height / 2 - tipHeight / 2;
     } else {
-      x = targetRect.left + targetRect.width / 2 - tipWidth / 2;
-      y = targetRect.top + targetRect.height + TOOLTIP_GAP_PX;
+      x = primaryTargetRect.left + primaryTargetRect.width / 2 - tipWidth / 2;
+      y = primaryTargetRect.top + primaryTargetRect.height + TOOLTIP_GAP_PX;
     }
 
     x = clamp(x, TOOLTIP_MARGIN_PX, window.innerWidth - tipWidth - TOOLTIP_MARGIN_PX);
     y = clamp(y, TOOLTIP_MARGIN_PX, window.innerHeight - tipHeight - TOOLTIP_MARGIN_PX);
     return { left: x, top: y };
-  }, [manualPos, renderedTooltipWidth, targetRect, tooltipPlacement, tooltipSize.height, tooltipSize.width]);
+  }, [
+    manualPos,
+    primaryTargetRect,
+    renderedTooltipWidth,
+    tooltipPlacement,
+    tooltipSize.height,
+    tooltipSize.width,
+  ]);
 
   useEffect(() => {
     if (!open) return;
     setStepIndex(0);
-    setTargetRect(null);
+    setTargetRects([]);
     setTargetMissing(false);
     setHint("");
     setManualPos(null);
@@ -606,6 +672,7 @@ export function SpotlightGuideOverlay({
     clickedTargetRef.current = false;
     lastAdvancedStepRef.current = "";
     setAutoAdvanceProgress(null);
+    setTargetRects([]);
     // Reset manual drag position on step change so tooltip follows the new target.
     setManualPos(null);
     setDragOffset(null);
@@ -665,7 +732,6 @@ export function SpotlightGuideOverlay({
   useEffect(() => {
     if (!open || finished || !currentStep) return;
 
-    const selector = resolveTargetSelector(currentStep.target);
     let rafId: number | null = null;
 
     const scheduleSync = () => {
@@ -677,30 +743,36 @@ export function SpotlightGuideOverlay({
     };
 
     const sync = () => {
-      const target = selector ? document.querySelector<HTMLElement>(selector) : null;
-      if (!target || !isElementVisible(target)) {
-        if (activeTargetRef.current) {
-          activeTargetRef.current.classList.remove("msgt-guide-target-active");
-          activeTargetRef.current = null;
-        }
-        setTargetRect(null);
+      const targets = resolveVisibleTargets(currentStep);
+      if (targets.length === 0) {
+        clearActiveTargets();
+        setTargetRects([]);
         setTargetMissing(true);
         return;
       }
 
-      if (activeTargetRef.current && activeTargetRef.current !== target) {
-        activeTargetRef.current.classList.remove("msgt-guide-target-active");
-      }
-      target.classList.add("msgt-guide-target-active");
-      activeTargetRef.current = target;
+      const nextSet = new Set(targets);
+      const activeSet = new Set(activeTargetsRef.current);
+      activeTargetsRef.current.forEach((target) => {
+        if (!nextSet.has(target)) {
+          target.classList.remove("msgt-guide-target-active");
+        }
+      });
+      targets.forEach((target) => {
+        if (!activeSet.has(target)) {
+          target.classList.add("msgt-guide-target-active");
+        }
+      });
+      activeTargetsRef.current = targets;
 
       setTargetMissing(false);
-      setTargetRect(getRectForElement(target));
+      setTargetRects(targets.map(getRectForElement));
 
       if (lastFocusedStepRef.current !== currentStep.id) {
-        target.scrollIntoView({ behavior: "auto", block: "center" });
+        const primaryTarget = targets[0];
+        primaryTarget.scrollIntoView({ behavior: "auto", block: "center" });
         if (mode === "input-idle" || mode === "change") {
-          const focusable = getFocusableTarget(target);
+          const focusable = getFocusableTarget(primaryTarget);
           focusable?.focus({ preventScroll: true });
         }
         lastFocusedStepRef.current = currentStep.id;
@@ -719,18 +791,15 @@ export function SpotlightGuideOverlay({
       if (rafId !== null) {
         window.cancelAnimationFrame(rafId);
       }
-      if (activeTargetRef.current) {
-        activeTargetRef.current.classList.remove("msgt-guide-target-active");
-      }
+      clearActiveTargets();
     };
-  }, [currentStep, finished, open]);
+  }, [clearActiveTargets, currentStep, finished, mode, open]);
 
   const attemptAdvance = useCallback(() => {
     if (!open || finished || !currentStep) return;
     if (lastAdvancedStepRef.current === currentStep.id) return;
 
-    const selector = resolveTargetSelector(currentStep.target);
-    const target = selector ? document.querySelector<HTMLElement>(selector) : null;
+    const targets = resolveVisibleTargets(currentStep);
     const requirements = resolveStepRequirements(currentStep, mode);
 
     if (requirements.requireClick && !clickedTargetRef.current) {
@@ -739,7 +808,7 @@ export function SpotlightGuideOverlay({
     }
 
     if (requirements.requireInput) {
-      if (!target || !targetHasInputValue(target)) {
+      if (targets.length === 0 || !targetListHasInputValue(targets)) {
         setHint(resolvedTexts.requireInputMessage);
         return;
       }
@@ -754,19 +823,18 @@ export function SpotlightGuideOverlay({
   useEffect(() => {
     if (!open || finished || !currentStep) return;
 
-    const selector = resolveTargetSelector(currentStep.target);
     const requirements = resolveStepRequirements(currentStep, mode);
     const shouldShowTimerLoading = currentStep.showAutoAdvanceProgress ?? true;
     const autoAdvanceMs =
       typeof currentStep.autoAdvanceMs === "number" ? currentStep.autoAdvanceMs : 0;
-    const getTarget = () => (selector ? document.querySelector<HTMLElement>(selector) : null);
+    const getTargets = () => resolveVisibleTargets(currentStep);
 
     const onClickCapture = (event: MouseEvent) => {
-      const target = getTarget();
-      if (!target) return;
+      const targets = getTargets();
+      if (targets.length === 0) return;
 
       const node = event.target as Node | null;
-      if (node && target.contains(node)) {
+      if (node && targets.some((target) => target.contains(node))) {
         clickedTargetRef.current = true;
         if (mode === "click") {
           attemptAdvance();
@@ -781,21 +849,21 @@ export function SpotlightGuideOverlay({
 
     const onChangeCapture = (event: Event) => {
       if (mode !== "change" && mode !== "input-idle") return;
-      const target = getTarget();
-      if (!target) return;
+      const targets = getTargets();
+      if (targets.length === 0) return;
 
       const node = event.target as HTMLElement | null;
-      if (!node || !target.contains(node)) return;
+      if (!node || !targets.some((target) => target.contains(node))) return;
 
       if (mode === "change") {
-        if (targetHasInputValue(target) || !requirements.requireInput) {
+        if (targetListHasInputValue(targets) || !requirements.requireInput) {
           attemptAdvance();
         }
         return;
       }
 
       if (mode === "input-idle" && node instanceof HTMLSelectElement) {
-        if (targetHasInputValue(target) || !requirements.requireInput) {
+        if (targetListHasInputValue(targets) || !requirements.requireInput) {
           attemptAdvance();
         }
       }
@@ -803,11 +871,11 @@ export function SpotlightGuideOverlay({
 
     const onInputCapture = (event: Event) => {
       if (mode !== "input-idle") return;
-      const target = getTarget();
-      if (!target) return;
+      const targets = getTargets();
+      if (targets.length === 0) return;
 
       const node = event.target as HTMLElement | null;
-      if (!node || !target.contains(node)) return;
+      if (!node || !targets.some((target) => target.contains(node))) return;
       if (!(node instanceof HTMLInputElement) && !(node instanceof HTMLTextAreaElement)) {
         return;
       }
@@ -818,13 +886,13 @@ export function SpotlightGuideOverlay({
 
       const idleMs = currentStep.inputIdleMs ?? DEFAULT_INPUT_IDLE_MS;
       inputIdleTimerRef.current = window.setTimeout(() => {
-        const latestTarget = getTarget();
-        if (!latestTarget) {
+        const latestTargets = getTargets();
+        if (latestTargets.length === 0) {
           inputIdleTimerRef.current = null;
           return;
         }
 
-        if (targetHasInputValue(latestTarget) || !requirements.requireInput) {
+        if (targetListHasInputValue(latestTargets) || !requirements.requireInput) {
           attemptAdvance();
         }
         inputIdleTimerRef.current = null;
@@ -877,11 +945,10 @@ export function SpotlightGuideOverlay({
   }, [attemptAdvance, currentStep, finished, mode, open, resolvedTexts.clickHighlightedMessage]);
 
   useEffect(() => {
-    if (finished && activeTargetRef.current) {
-      activeTargetRef.current.classList.remove("msgt-guide-target-active");
-      activeTargetRef.current = null;
+    if (finished) {
+      clearActiveTargets();
     }
-  }, [finished]);
+  }, [clearActiveTargets, finished]);
 
   if (!open) {
     return null;
@@ -913,21 +980,13 @@ export function SpotlightGuideOverlay({
     highlightAnimation === "dash" || highlightAnimation === "color-dash";
   const animateColor =
     highlightAnimation === "color" || highlightAnimation === "color-dash";
-  const highlightLeft = targetRect
-    ? Math.max(0, targetRect.left - HIGHLIGHT_OUTER_OFFSET_PX)
-    : 0;
-  const highlightTop = targetRect
-    ? Math.max(0, targetRect.top - HIGHLIGHT_OUTER_OFFSET_PX)
-    : 0;
-  const highlightWidth = targetRect
-    ? targetRect.width + HIGHLIGHT_OUTER_OFFSET_PX * 2
-    : 0;
-  const highlightHeight = targetRect
-    ? targetRect.height + HIGHLIGHT_OUTER_OFFSET_PX * 2
-    : 0;
+  const highlightRects = targetRects.map((rect) => ({
+    left: Math.max(0, rect.left - HIGHLIGHT_OUTER_OFFSET_PX),
+    top: Math.max(0, rect.top - HIGHLIGHT_OUTER_OFFSET_PX),
+    width: rect.width + HIGHLIGHT_OUTER_OFFSET_PX * 2,
+    height: rect.height + HIGHLIGHT_OUTER_OFFSET_PX * 2,
+  }));
   const highlightStrokeInset = HIGHLIGHT_STROKE_WIDTH_PX / 2;
-  const highlightStrokeRectWidth = Math.max(0, highlightWidth - HIGHLIGHT_STROKE_WIDTH_PX);
-  const highlightStrokeRectHeight = Math.max(0, highlightHeight - HIGHLIGHT_STROKE_WIDTH_PX);
   const highlightStrokeRadius = Math.max(0, HIGHLIGHT_RADIUS_PX - highlightStrokeInset);
   const highlightStrokeClassName = [
     "msgt-highlight-stroke-rect",
@@ -947,7 +1006,7 @@ export function SpotlightGuideOverlay({
   const targetMissingMessage =
     currentStep
       ? interpolate(resolvedTexts.targetMissingMessage, {
-          target: currentStep.target,
+          target: resolveStepTargetNames(currentStep).join(", "),
         })
       : "";
   const autoAdvanceMessage = interpolate(resolvedTexts.autoAdvanceMessage, {
@@ -956,46 +1015,93 @@ export function SpotlightGuideOverlay({
   const completedTitle =
     guide.meta.tooltipTitle ??
     interpolate(resolvedTexts.completedTitleTemplate, { title: guide.meta.title });
+  const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 0;
+  const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 0;
+  const highlightMaskId = `${overlayIdRef.current}-highlight-mask`;
+  const overlayZIndex = Math.max(zIndex, MIN_OVERLAY_Z_INDEX);
 
   const overlayNode = (
-    <div className={`msgt-overlay-root ${className ?? ""}`.trim()} style={{ zIndex }}>
-      <div className="msgt-overlay-backdrop" style={{ backgroundColor: overlayColor }} />
-
-      {!finished && targetRect && showHighlight && (
-        <>
-          <div
-            className="msgt-highlight"
-            style={{
-              left: `${highlightLeft}px`,
-              top: `${highlightTop}px`,
-              width: `${highlightWidth}px`,
-              height: `${highlightHeight}px`,
-              boxShadow: `0 0 0 9999px ${overlayColor}`,
-            }}
+    <div className={`msgt-overlay-root ${className ?? ""}`.trim()} style={{ zIndex: overlayZIndex }}>
+      {!finished && showHighlight && highlightRects.length > 0 && viewportWidth > 0 && viewportHeight > 0 ? (
+        <svg
+          className="msgt-overlay-backdrop-svg"
+          width={viewportWidth}
+          height={viewportHeight}
+          viewBox={`0 0 ${viewportWidth} ${viewportHeight}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <mask
+              id={highlightMaskId}
+              x={0}
+              y={0}
+              width={viewportWidth}
+              height={viewportHeight}
+              maskUnits="userSpaceOnUse"
+              maskContentUnits="userSpaceOnUse"
+            >
+              <rect x={0} y={0} width={viewportWidth} height={viewportHeight} fill="#ffffff" />
+              {highlightRects.map((rect, index) => (
+                <rect
+                  key={`mask-${index}`}
+                  x={rect.left}
+                  y={rect.top}
+                  width={rect.width}
+                  height={rect.height}
+                  rx={HIGHLIGHT_RADIUS_PX}
+                  ry={HIGHLIGHT_RADIUS_PX}
+                  fill="#000000"
+                />
+              ))}
+            </mask>
+          </defs>
+          <rect
+            x={0}
+            y={0}
+            width={viewportWidth}
+            height={viewportHeight}
+            fill={overlayColor}
+            mask={`url(#${highlightMaskId})`}
           />
-          <svg
-            className="msgt-highlight-stroke"
-            style={{
-              left: `${highlightLeft}px`,
-              top: `${highlightTop}px`,
-              width: `${highlightWidth}px`,
-              height: `${highlightHeight}px`,
-            }}
-            viewBox={`0 0 ${highlightWidth} ${highlightHeight}`}
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <rect
-              className={highlightStrokeClassName}
-              x={highlightStrokeInset}
-              y={highlightStrokeInset}
-              width={highlightStrokeRectWidth}
-              height={highlightStrokeRectHeight}
-              rx={highlightStrokeRadius}
-              ry={highlightStrokeRadius}
-              style={{ color: highlightColor, stroke: highlightColor }}
-            />
-          </svg>
+        </svg>
+      ) : (
+        <div className="msgt-overlay-backdrop" style={{ backgroundColor: overlayColor }} />
+      )}
+
+      {!finished && showHighlight && highlightRects.length > 0 && (
+        <>
+          {highlightRects.map((rect, index) => {
+            const highlightStrokeRectWidth = Math.max(0, rect.width - HIGHLIGHT_STROKE_WIDTH_PX);
+            const highlightStrokeRectHeight = Math.max(0, rect.height - HIGHLIGHT_STROKE_WIDTH_PX);
+
+            return (
+              <svg
+                key={`stroke-${index}`}
+                className="msgt-highlight-stroke"
+                style={{
+                  left: `${rect.left}px`,
+                  top: `${rect.top}px`,
+                  width: `${rect.width}px`,
+                  height: `${rect.height}px`,
+                }}
+                viewBox={`0 0 ${rect.width} ${rect.height}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <rect
+                  className={highlightStrokeClassName}
+                  x={highlightStrokeInset}
+                  y={highlightStrokeInset}
+                  width={highlightStrokeRectWidth}
+                  height={highlightStrokeRectHeight}
+                  rx={highlightStrokeRadius}
+                  ry={highlightStrokeRadius}
+                  style={{ color: highlightColor, stroke: highlightColor }}
+                />
+              </svg>
+            );
+          })}
         </>
       )}
 

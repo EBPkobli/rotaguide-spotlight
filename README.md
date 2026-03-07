@@ -1,4 +1,4 @@
-# md-spotlight-guide-tool
+# RotaGuide Spotlight
 
 Markdown / JSON / YAML-driven, click-through spotlight walkthrough for React applications.
 
@@ -10,20 +10,20 @@ Markdown / JSON / YAML-driven, click-through spotlight walkthrough for React app
 ## Installation
 
 ```bash
-npm install md-spotlight-guide-tool
+npm install @rotaguide/spotlight
 ```
 
 Also import styles once in your app:
 
 ```ts
-import "md-spotlight-guide-tool/style.css";
+import "@rotaguide/spotlight/style.css";
 ```
 
 ## Quick Usage
 
 ```tsx
-import { MarkdownGuideButton, guideTarget } from "md-spotlight-guide-tool";
-import "md-spotlight-guide-tool/style.css";
+import { MarkdownGuideButton, guideTarget } from "@rotaguide/spotlight";
+import "@rotaguide/spotlight/style.css";
 import guideMarkdown from "./create-booking.guide.md?raw";
 
 export function CreatePage() {
@@ -47,6 +47,8 @@ In guide content, `target` can be:
 - A shorthand target id like `customer-name` (resolved to `[data-click-guide="customer-name"]`)
 - A full CSS selector like `#save-btn` or `[data-test="save"]`
 
+For multi-spotlight in a single step, you can also set `targets` / `componentIds` as an array.
+
 ## Guide Format
 
 See [GUIDE_MD_STANDARD.md](./GUIDE_MD_STANDARD.md) for full markdown format and JSON/YAML alternatives.
@@ -56,6 +58,7 @@ For a practical feature-by-feature reference, see [TOOL_FEATURES_GUIDE.md](./TOO
 
 You can control behavior per step in markdown/json/yaml:
 
+- `targets: string[]` (highlight multiple elements at once; tooltip anchors to first; aliases: `targetIds`, `componentIds`, `components`, `componentId`)
 - `skippable: boolean`
 - `mustClickTarget: boolean`
 - `mustEnterValue: boolean`
@@ -82,11 +85,11 @@ Built-in tooltip templates:
 ```yaml
 tooltipTemplate: glass
 i18n:
-  locale: tr
-  stepProgressLabel: "Adım {current}/{total}"
-  backButtonLabel: "Geri"
-  nextButtonLabel: "İleri"
-  autoAdvanceMessage: "{seconds}s içinde otomatik ilerleniyor"
+  locale: en
+  stepProgressLabel: "Step {current}/{total}"
+  backButtonLabel: "Back"
+  nextButtonLabel: "Next"
+  autoAdvanceMessage: "Auto advancing in {seconds}s"
 theme:
   fontFamily: "'Poppins', 'Segoe UI', sans-serif"
   tooltipBackgroundColor: "#ffffff"

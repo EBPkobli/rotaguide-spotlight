@@ -117,12 +117,16 @@ allowSkip: false
 
 Required:
 - `id: string`
-- `target: string`
+- `target: string` primary spotlight target (CSS selector or `data-click-guide` shorthand); if omitted, first entry from `targets` is used
 - `kind: Filter | Toggle | Action | Input | Tab | List | Map Interaction`
 - `title: string`
 - `description: string`
 
 Optional:
+- `targets: string[]` additional spotlight targets — all are highlighted simultaneously; tooltip anchors to first resolved target
+  - Aliases accepted and merged: `targetIds`, `componentIds`, `components`, `componentId`
+  - Comma-separated string also accepted: `targets: "btn-a, btn-b, btn-c"`
+  - All entries are de-duplicated; invisible or missing targets are silently skipped
 - `skippable: boolean` (default true)
 - `allowSkip: boolean` legacy alias of `skippable`
 - `advanceOn: auto | click | change | input-idle | none` (default auto)
@@ -220,6 +224,7 @@ You can set `tooltipTemplate` at:
 - If `target` looks like CSS selector (`#x`, `.x`, `[x]`, etc), it is used directly.
 - Otherwise it is treated as shorthand and resolved to:
   - `[data-click-guide="<target>"]`
+- Multi target fields (`targets`, `componentIds`, etc.) follow the same selector rules.
 
 Example:
 - `target: customer-name` => `[data-click-guide="customer-name"]`
@@ -233,9 +238,9 @@ id: create-booking-guide
 title: Create Booking Walkthrough
 buttonLabel: Start Create Guide
 i18n:
-  locale: tr
-  stepProgressLabel: "Adım {current}/{total}"
-  autoAdvanceMessage: "{seconds}s içinde otomatik ilerleniyor"
+  locale: en
+  stepProgressLabel: "Step {current}/{total}"
+  autoAdvanceMessage: "Auto advancing in {seconds}s"
 theme:
   fontFamily: "'Segoe UI', 'Inter', sans-serif"
   tooltipBorderColor: "#d9e6ef"
@@ -265,7 +270,7 @@ description: Type a customer name.
 mustEnterValue: true
 inputIdleMs: 1500
 i18n:
-  requireInputMessage: "Bu alana müşteri adı girilmelidir."
+  requireInputMessage: "Enter a customer name in this field."
 ```
 
 ## Step: Save

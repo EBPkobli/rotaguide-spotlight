@@ -1,14 +1,14 @@
-# md-spotlight-guide-tool — Complete Feature Guide
+# RotaGuide Spotlight — Complete Feature Guide
 
-This document is a full reference for all currently supported features in `md-spotlight-guide-tool`.
+This document is a full reference for all currently supported features in `RotaGuide Spotlight`.
 Guide source formats: markdown, JSON, YAML.
 Guide UI customization: i18n text + theme colors/fonts.
 
 ## 1. Quick Start
 
 ```tsx
-import { MarkdownGuideButton, guideTarget } from "md-spotlight-guide-tool";
-import "md-spotlight-guide-tool/style.css";
+import { MarkdownGuideButton, guideTarget } from "@rotaguide/spotlight";
+import "@rotaguide/spotlight/style.css";
 import guideContent from "./feature-tour.guide.md?raw";
 
 export function Page() {
@@ -82,7 +82,7 @@ description: Click Open to continue.
 | Field | Type |
 |---|---|
 | `id` | `string` |
-| `target` | `string` |
+| `target` | `string` — primary spotlight target; if omitted, first entry from `targets` is used |
 | `kind` | `Filter \| Toggle \| Action \| Input \| Tab \| List \| Map Interaction` |
 | `title` | `string` |
 | `description` | `string` |
@@ -91,6 +91,7 @@ description: Click Open to continue.
 
 | Field | Type | Default | Notes |
 |---|---|---|---|
+| `targets` | `string[]` | - | Extra spotlight targets — all listed elements are highlighted simultaneously. Tooltip anchors to the first resolved target. Aliases: `targetIds`, `componentIds`, `components`, `componentId`. Also accepts comma-separated string. |
 | `skippable` | `boolean` | `true` | Preferred skip field |
 | `allowSkip` | `boolean` | - | Legacy alias of `skippable` |
 | `advanceOn` | `auto \| click \| change \| input-idle \| none` | `auto` | Controls step completion mode |
@@ -122,9 +123,29 @@ description: Click Open to continue.
 [data-click-guide="<target>"]
 ```
 
+- `targets` / `componentIds` items use the same resolution logic.
+
 Examples:
 - `target: customer-name` -> `[data-click-guide="customer-name"]`
 - `target: "#save-booking-btn"` -> `#save-booking-btn`
+
+### Multi-Target Spotlighting
+
+Use `targets` when one step should highlight more than one element:
+
+```yaml
+target: placement-btn-top
+targets:
+  - placement-btn-right
+  - placement-btn-left
+  - placement-btn-bottom
+```
+
+- All resolved elements are highlighted in the same step.
+- Tooltip placement is calculated from the first resolved target.
+- `targets` also accepts aliases: `targetIds`, `componentIds`, `components`, `componentId`.
+- Array and comma-separated string forms are both accepted.
+- Duplicate, missing, or invisible targets are skipped automatically.
 
 ## 6. Step Advancement Logic
 
