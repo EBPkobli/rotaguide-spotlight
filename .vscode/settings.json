@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^git status --short && git add -A && git commit -m \"chore: use unscoped npm package name\" && git push$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

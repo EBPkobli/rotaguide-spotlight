@@ -7,8 +7,8 @@ Guide UI customization: i18n text + theme colors/fonts.
 ## 1. Quick Start
 
 ```tsx
-import { MarkdownGuideButton, guideTarget } from "@rotaguide/spotlight";
-import "@rotaguide/spotlight/style.css";
+import { MarkdownGuideButton, guideTarget } from "rotaguide-spotlight";
+import "rotaguide-spotlight/style.css";
 import guideContent from "./feature-tour.guide.md?raw";
 
 export function Page() {

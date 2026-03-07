@@ -1,5 +1,5 @@
 {
-  "name": "@rotaguide/spotlight",
+  "name": "rotaguide-spotlight",
   "version": "0.1.0",
   "description": "RotaGuide Spotlight: markdown, JSON, and YAML-driven spotlight walkthroughs for React apps",
   "license": "MIT",

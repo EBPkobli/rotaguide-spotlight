@@ -10,20 +10,20 @@ Markdown / JSON / YAML-driven, click-through spotlight walkthrough for React app
 ## Installation
 
 ```bash
-npm install @rotaguide/spotlight
+npm install rotaguide-spotlight
 ```
 
 Also import styles once in your app:
 
 ```ts
-import "@rotaguide/spotlight/style.css";
+import "rotaguide-spotlight/style.css";
 ```
 
 ## Quick Usage
 
 ```tsx
-import { MarkdownGuideButton, guideTarget } from "@rotaguide/spotlight";
-import "@rotaguide/spotlight/style.css";
+import { MarkdownGuideButton, guideTarget } from "rotaguide-spotlight";
+import "rotaguide-spotlight/style.css";
 import guideMarkdown from "./create-booking.guide.md?raw";
 
 export function CreatePage() {
