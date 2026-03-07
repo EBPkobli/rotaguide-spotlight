@@ -64,16 +64,17 @@ description: Click Open to continue.
 | `buttonLabel` | `string` | No | `"Start Guide"` | Used by `MarkdownGuideButton` |
 | `tooltipTitle` | `string` | No | `${title} completed` | Final step title |
 | `tooltipPlacement` | `auto \| top \| right \| bottom \| left` | No | `auto` | Preferred tooltip side |
+| `tooltipPosition` | `auto \| top \| right \| bottom \| left` | No | - | Alias of `tooltipPlacement` |
 | `overlayColor` | `string` | No | `rgba(0, 43, 69, 0.22)` | Backdrop and outside mask color |
 | `highlightColor` | `string` | No | `rgb(255, 199, 0)` | Highlight stroke color |
 | `highlightStyle` | `line \| dash` | No | `line` | Also accepts `solid`, `dashed` aliases |
 | `highlightAnimation` | `none \| color \| dash \| color-dash` | No | `none` | Also accepts aliases like `off`, `dash-move` |
-| `tooltipTemplate` | `default \| glass \| minimal \| contrast \| dashboard-orange \| clean-white \| commerce-dark \| terminal-pop \| outline-light` | No | `clean-white` | Preset tooltip design template |
+| `tooltipTemplate` | `default \| glass \| minimal \| contrast \| dashboard-orange \| clean-white \| commerce-dark \| terminal-pop \| outline-light` | No | `clean-white` | Preset tooltip design template. Aliases: `tooltipVariant`, `template` |
 | `tooltipWidth` | `number` | No | `360` | Tooltip max rendered width is `540` |
 | `showHighlight` | `boolean` | No | `true` | Global default, step can override |
 | `draggable` | `boolean` | No | `true` | Global default, step can override |
-| `i18n` | `object` | No | locale defaults | Global text language/label overrides |
-| `theme` | `object` | No | internal CSS defaults | Global tooltip/button/font design overrides |
+| `i18n` | `object` | No | locale defaults | Global text language/label overrides. Aliases: `texts`, `labels` |
+| `theme` | `object` | No | internal CSS defaults | Global tooltip/button/font design overrides. Aliases: `style`, `design` |
 
 ## 4. Step Fields
 
@@ -109,7 +110,7 @@ description: Click Open to continue.
 | `highlightColor` | `string` | inherit | Step-level color override |
 | `highlightStyle` | `line \| dash` | inherit | Step-level style override |
 | `highlightAnimation` | `none \| color \| dash \| color-dash` | inherit | Step-level animation override |
-| `tooltipTemplate` | `default \| glass \| minimal \| contrast \| dashboard-orange \| clean-white \| commerce-dark \| terminal-pop \| outline-light` | inherit | Step-level preset template override |
+| `tooltipTemplate` | `default \| glass \| minimal \| contrast \| dashboard-orange \| clean-white \| commerce-dark \| terminal-pop \| outline-light` | inherit | Step-level preset template override. Aliases: `tooltipVariant`, `template` |
 | `draggable` | `boolean` | inherit | Step-level dragging override |
 | `i18n` | `object` | inherit | Step-level text overrides |
 | `theme` | `object` | inherit | Step-level visual overrides |
@@ -146,6 +147,18 @@ targets:
 - `targets` also accepts aliases: `targetIds`, `componentIds`, `components`, `componentId`.
 - Array and comma-separated string forms are both accepted.
 - Duplicate, missing, or invisible targets are skipped automatically.
+
+### Alias and Normalization Rules
+
+- `tooltipPosition` is normalized to `tooltipPlacement`.
+- `tooltipVariant` and `template` are normalized to `tooltipTemplate`.
+- `durationMs` and `timeoutMs` are normalized to `autoAdvanceMs`.
+- `showTimerLoading` is normalized to `showAutoAdvanceProgress`.
+- `texts` and `labels` are normalized to `i18n`.
+- `style` and `design` are normalized to `theme`.
+- `locale`, `lang`, and `language` are all accepted.
+- placement synonyms: `up` / `above`, `down` / `below`, `start`, `end`.
+- template synonyms: `standard`, `dark`, `dashboard`, `clean`, `ecommerce`, `terminal`, `outlined` and related variants.
 
 ## 6. Step Advancement Logic
 
@@ -230,6 +243,15 @@ targets:
 - `parseGuideContent(content, { format })` returns parsed guide or throws `GuideParseError`.
 - `format` supports: `auto`, `markdown`, `json`, `yaml`.
 - `parseGuideMarkdownSafe/parseGuideMarkdown` remain as backward-compatible aliases (auto format).
+
+### Other Public Exports
+
+- `SpotlightGuideOverlay`
+- `GuideParseError`
+- `formatGuideIssues()`
+- `guideTarget()`
+- constants: `GUIDE_KINDS`, `GUIDE_ADVANCE_MODES`, `GUIDE_SOURCE_FORMATS`, `GUIDE_HIGHLIGHT_STYLES`, `GUIDE_HIGHLIGHT_ANIMATIONS`, `GUIDE_TOOLTIP_PLACEMENTS`, `GUIDE_TOOLTIP_TEMPLATES`
+- types: `GuideDefinition`, `GuideMeta`, `GuideStep`, `GuideIssue`, `GuideI18n`, `GuideTheme`, `GuideKind`, `GuideAdvanceMode`, `GuideSourceFormat`, `GuideHighlightStyle`, `GuideHighlightAnimation`, `GuideTooltipPlacement`, `GuideTooltipTemplate`
 
 ### `MarkdownGuideButton` behavior
 

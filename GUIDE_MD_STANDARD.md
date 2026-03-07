@@ -81,16 +81,24 @@ Fields:
 - `tooltipTitle: string` optional
 - `tooltipPlacement: auto | top | right | bottom | left` optional, default `auto`
 - `tooltipPosition: auto | top | right | bottom | left` optional alias of `tooltipPlacement`
+  - placement synonyms are normalized: `up` / `above` -> `top`, `down` / `below` -> `bottom`, `start` -> `left`, `end` -> `right`
 - `overlayColor: string` optional CSS color
 - `highlightColor: string` optional CSS color
 - `highlightStyle: line | dash` optional, default `line`
+  - accepted aliases: `solid` -> `line`, `dashed` -> `dash`
 - `highlightAnimation: none | color | dash | color-dash` optional, default `none`
+  - accepted aliases include `off`, `dash-move`, `dashmove`, `dash-color`, `color-dash-move`
 - `tooltipTemplate: default | glass | minimal | contrast | dashboard-orange | clean-white | commerce-dark | terminal-pop | outline-light` optional, default `clean-white`
+  - aliases: `tooltipVariant`, `template`
+  - accepted template synonyms: `classic`, `base`, `standard`, `dark`, `dashboard`, `dark-dashboard`, `clean`, `light`, `ecommerce`, `promo-dark`, `terminal`, `code-tour`, `outlined`, `outline`
 - `tooltipWidth: number` optional px
 - `showHighlight: boolean` optional, default `true`
 - `draggable: boolean` optional, default `true`
 - `i18n: object` optional, language + UI text overrides
+  - aliases: `texts`, `labels`
+  - locale aliases inside the object or root level: `locale`, `lang`, `language`
 - `theme: object` optional, tooltip frame/button/font/timer design overrides
+  - aliases: `style`, `design`
 
 ## 2. Steps
 
@@ -137,6 +145,8 @@ Optional:
 - `highlightStyle: line | dash` step-level border style override
 - `highlightAnimation: none | color | dash | color-dash` step-level animation override
 - `tooltipTemplate: default | glass | minimal | contrast | dashboard-orange | clean-white | commerce-dark | terminal-pop | outline-light` step-level preset override
+- `tooltipVariant: ...` alias of `tooltipTemplate`
+- `template: ...` alias of `tooltipTemplate`
 - `mustClickTarget: boolean` force step completion only after target click
 - `mustEnterValue: boolean` force non-empty value in target input/select
 - `autoAdvanceMs: number` auto-complete step after this duration
@@ -155,6 +165,16 @@ Built-in locale defaults:
 - `locale: en` (default)
 - `locale: tr` (Turkish built-in labels/messages)
 - `locale: da` (Danish built-in labels/messages)
+
+Accepted object aliases:
+- `i18n`
+- `texts`
+- `labels`
+
+Accepted locale field aliases:
+- `locale`
+- `lang`
+- `language`
 
 All text fields can also be set directly (global or step-level):
 - `stepProgressLabel` (supports `{current}`, `{total}`)
@@ -175,8 +195,12 @@ All text fields can also be set directly (global or step-level):
 
 ### theme keys
 
-All theme fields are optional and can be set in `meta.theme` or `step.theme`:
+All theme fields are optional and can be set in `meta.theme` or `step.theme`.
+Accepted object aliases: `theme`, `style`, `design`.
+
+Fields:
 - `tooltipTemplate` (`default` | `glass` | `minimal` | `contrast` | `dashboard-orange` | `clean-white` | `commerce-dark` | `terminal-pop` | `outline-light`)
+  - aliases: `tooltipVariant`, `template`
 - `fontFamily`
 - `tooltipBackgroundColor`
 - `tooltipTextColor`
@@ -229,6 +253,19 @@ You can set `tooltipTemplate` at:
 Example:
 - `target: customer-name` => `[data-click-guide="customer-name"]`
 - `target: "#customer-name-input"` => `#customer-name-input`
+
+## 4.1 Normalization Aliases
+
+Parser normalization supported by guide content:
+
+- `tooltipPosition` -> `tooltipPlacement`
+- `tooltipVariant` / `template` -> `tooltipTemplate`
+- `durationMs` / `timeoutMs` -> `autoAdvanceMs`
+- `showTimerLoading` -> `showAutoAdvanceProgress`
+- `targetIds` / `componentIds` / `components` / `componentId` -> merged into `targets`
+- `texts` / `labels` -> `i18n`
+- `style` / `design` -> `theme`
+- `lang` / `language` -> locale selection
 
 ## 5. Full Example
 

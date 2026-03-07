@@ -5,6 +5,8 @@ Markdown / JSON / YAML-driven, click-through spotlight walkthrough for React app
 - Single button to start guide
 - Black transparent backdrop + yellow focus mask
 - Step-by-step progression from markdown, JSON, or YAML content
+- Multi-target spotlighting in a single step
+- Placement presets, template presets, i18n, and theme overrides
 - Runtime validation and clear parse error dialog
 
 ## Installation
@@ -48,6 +50,13 @@ In guide content, `target` can be:
 - A full CSS selector like `#save-btn` or `[data-test="save"]`
 
 For multi-spotlight in a single step, you can also set `targets` / `componentIds` as an array.
+
+Parser aliases are also supported for authoring convenience:
+- `targetIds`, `componentIds`, `components`, `componentId` -> `targets`
+- `tooltipPosition` -> `tooltipPlacement`
+- `tooltipVariant` / `template` -> `tooltipTemplate`
+- `durationMs` / `timeoutMs` -> `autoAdvanceMs`
+- `showTimerLoading` -> `showAutoAdvanceProgress`
 
 ## Guide Format
 
@@ -104,6 +113,13 @@ theme:
 - `{seconds}` for `autoAdvanceMessage`
 - `{target}` for `targetMissingMessage`
 - `{title}` for `completedTitleTemplate`
+
+Additional normalization supported by the parser:
+- `locale`, `lang`, and `language` all map to locale selection
+- `i18n`, `texts`, and `labels` are accepted for text override objects
+- `theme`, `style`, and `design` are accepted for theme override objects
+- placement synonyms: `up` / `above`, `down` / `below`, `start`, `end`
+- template synonyms: `standard`, `dark`, `dashboard`, `clean`, `ecommerce`, `terminal`, `outlined`
 
 ## Error Handling
 
@@ -163,6 +179,15 @@ Returns parsed guide or throws `GuideParseError`.
 
 - `parseGuideMarkdownSafe(markdown)` (auto format support)
 - `parseGuideMarkdown(markdown)` (auto format support)
+
+### Other Exports
+
+- `SpotlightGuideOverlay`
+- `GuideParseError`
+- `formatGuideIssues()`
+- `guideTarget()`
+- exported constants: `GUIDE_KINDS`, `GUIDE_ADVANCE_MODES`, `GUIDE_SOURCE_FORMATS`, `GUIDE_HIGHLIGHT_STYLES`, `GUIDE_HIGHLIGHT_ANIMATIONS`, `GUIDE_TOOLTIP_PLACEMENTS`, `GUIDE_TOOLTIP_TEMPLATES`
+- exported types: `GuideDefinition`, `GuideMeta`, `GuideStep`, `GuideIssue`, `GuideI18n`, `GuideTheme`, `GuideKind`, `GuideAdvanceMode`, `GuideSourceFormat`, `GuideHighlightStyle`, `GuideHighlightAnimation`, `GuideTooltipPlacement`, `GuideTooltipTemplate`
 
 ## Notes
 
