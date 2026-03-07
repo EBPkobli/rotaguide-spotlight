@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MD Spotlight Guide - SaaS Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .grid-bg {
+            background-image: radial-gradient(circle at 1px 1px, rgba(236, 91, 19, 0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .spotlight-mask {
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Header / TopNavBar -->
+<header class="sticky top-0 z-40 w-full border-b border-primary/10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-6 lg:px-10 py-3">
+<div class="max-w-[1440px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-primary">
+<span class="material-symbols-outlined text-3xl font-bold">query_stats</span>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold tracking-tight">MD Spotlight</h2>
+</div>
+<div class="hidden md:flex flex-col min-w-64">
+<div class="flex w-full items-stretch rounded-xl h-10 bg-primary/5 border border-primary/20">
+<div class="flex items-center justify-center pl-4 text-primary/60">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="w-full bg-transparent border-none focus:ring-0 text-sm placeholder:text-primary/40 px-3" placeholder="Search analytics..."/>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden lg:flex items-center gap-8">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Reset</a>
+<div class="relative group">
+<button class="flex items-center gap-1 text-sm font-medium hover:text-primary transition-colors">
+                            Docs <span class="material-symbols-outlined text-xs">expand_more</span>
+</button>
+</div>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Examples</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined p-2 text-slate-500 hover:text-primary transition-colors">notifications</button>
+<button class="material-symbols-outlined p-2 text-slate-500 hover:text-primary transition-colors">settings</button>
+<button class="hidden sm:flex items-center justify-center px-4 h-10 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:brightness-110 transition-all">
+                        Donate
+                    </button>
+<div class="size-10 rounded-full border-2 border-primary/20 bg-primary/10 overflow-hidden">
+<img alt="User profile" data-alt="Professional user profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtajsxWsaNt1cTdxAPsQlUUgOMbux5MqTxvmbb0N-TA4XNkvGYHmHN5TefAqAdq-IRpn9ebrI1JPpswCDVxkvhLZmgLUst4ITbXNXWeSnGlZjgpuNbWXHeGF3e6rHxHFknEKAsZJ4aUMiPW7Pxgaff8YtdcnLVGd1B_nTsSqUbypyizMLHK8rEmzUPt2QZ2MliMJkOLSY5f0VLZmvt_gZ5iPLIFop7NVi7cK6FeDfvyC-QYBXf5j8_cJwp4dsF--e_k-MIUvOvY64"/>
+</div>
+</div>
+</div>
+</div>
+</header>
+<div class="flex max-w-[1440px] mx-auto min-h-[calc(100-64px)]">
+<!-- Sidebar Navigation -->
+<aside class="hidden md:flex w-64 flex-col border-r border-primary/10 p-4 gap-2">
+<div class="mb-6 px-4">
+<p class="text-xs font-bold uppercase tracking-widest text-primary/50">Main Menu</p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white font-medium" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
+<span class="material-symbols-outlined">bar_chart</span> Analytics
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
+<span class="material-symbols-outlined">folder</span> Projects
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
+<span class="material-symbols-outlined">group</span> Team
+                </a>
+<div class="mt-8 mb-2 px-4">
+<p class="text-xs font-bold uppercase tracking-widest text-primary/50">System</p>
+</div>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span> Billing
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-primary/10 transition-colors font-medium text-slate-600 dark:text-slate-400 hover:text-primary" href="#">
+<span class="material-symbols-outlined">settings</span> Configuration
+                </a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 grid-bg p-6 lg:p-8 relative">
+<!-- Metric Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Total Revenue</p>
+<span class="material-symbols-outlined text-primary">payments</span>
+</div>
+<p class="text-2xl font-bold mb-1">$128,430</p>
+<p class="text-xs font-semibold text-emerald-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +12.5% <span class="font-normal text-slate-400">vs last month</span>
+</p>
+</div>
+<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Active Users</p>
+<span class="material-symbols-outlined text-primary">person_check</span>
+</div>
+<p class="text-2xl font-bold mb-1">42.5k</p>
+<p class="text-xs font-semibold text-emerald-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +5.2% <span class="font-normal text-slate-400">vs last month</span>
+</p>
+</div>
+<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Conversion Rate</p>
+<span class="material-symbols-outlined text-primary">bolt</span>
+</div>
+<p class="text-2xl font-bold mb-1">3.2%</p>
+<p class="text-xs font-semibold text-rose-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_down</span> -1.1% <span class="font-normal text-slate-400">vs last month</span>
+</p>
+</div>
+<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Avg. Session</p>
+<span class="material-symbols-outlined text-primary">timer</span>
+</div>
+<p class="text-2xl font-bold mb-1">12m 45s</p>
+<p class="text-xs font-semibold text-emerald-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">trending_up</span> +0.8% <span class="font-normal text-slate-400">vs last month</span>
+</p>
+</div>
+</div>
+<!-- Spotlight Target Area: Project Statistics -->
+<div class="relative">
+<!-- Visual highlight layer -->
+<div class="absolute -inset-2 spotlight-mask rounded-xl pointer-events-none z-20"></div>
+<div class="relative z-30 p-6 rounded-xl border-2 border-primary bg-white dark:bg-background-dark shadow-2xl">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h3 class="text-xl font-bold">Project Statistics</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400">Global completion rates by day</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-xs font-medium rounded bg-primary/10 text-primary">Week</button>
+<button class="px-3 py-1 text-xs font-medium rounded hover:bg-primary/10 transition-colors">Month</button>
+</div>
+</div>
+<div class="flex items-end gap-4 h-64 px-4">
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 60%"></div>
+<span class="text-xs font-bold text-slate-400">Mon</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 45%"></div>
+<span class="text-xs font-bold text-slate-400">Tue</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 85%"></div>
+<span class="text-xs font-bold text-slate-400">Wed</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary rounded-t-lg shadow-[0_0_20px_rgba(236,91,19,0.3)]" style="height: 70%"></div>
+<span class="text-xs font-bold text-primary">Thu</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 55%"></div>
+<span class="text-xs font-bold text-slate-400">Fri</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 30%"></div>
+<span class="text-xs font-bold text-slate-400">Sat</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-2 group">
+<div class="w-full bg-primary/20 rounded-t-lg transition-all hover:bg-primary" style="height: 40%"></div>
+<span class="text-xs font-bold text-slate-400">Sun</span>
+</div>
+</div>
+</div>
+<!-- Draggable Spotlight Tooltip -->
+<div class="absolute -bottom-4 left-1/2 -translate-x-1/2 translate-y-full z-50 w-72 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-primary/20 overflow-hidden cursor-move">
+<div class="bg-primary px-4 py-2 flex items-center justify-between cursor-grab active:cursor-grabbing">
+<span class="text-[10px] font-bold uppercase tracking-wider text-white/80">Guide Spotlight</span>
+<div class="flex gap-1">
+<div class="size-1.5 rounded-full bg-white/40"></div>
+<div class="size-1.5 rounded-full bg-white/40"></div>
+</div>
+</div>
+<div class="p-5">
+<h4 class="font-bold text-primary mb-1">Step 1 of 4: Welcome to the Dashboard</h4>
+<p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                            This chart displays your team's weekly progress. You can hover over individual bars to see detailed metrics for each day.
+                        </p>
+<div class="flex items-center justify-between">
+<button class="text-xs font-bold text-slate-400 hover:text-primary transition-colors">Skip Guide</button>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 text-xs font-bold border border-primary/30 rounded-lg hover:bg-primary/5">Back</button>
+<button class="px-3 py-1.5 text-xs font-bold bg-primary text-white rounded-lg shadow-md shadow-primary/20">Next Step</button>
+</div>
+</div>
+</div>
+<!-- Indicator Arrow -->
+<div class="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white dark:bg-slate-900 border-l border-t border-primary/20 rotate-45"></div>
+</div>
+</div>
+<!-- More Dashboard Content (Faded/Background) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12 opacity-40">
+<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5">
+<h4 class="font-bold mb-4">Recent Transactions</h4>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">shopping_cart</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold">AWS Enterprise</p>
+<p class="text-xs text-slate-400">Subscription Renewal</p>
+</div>
+<p class="text-sm font-bold">-$499.00</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-bold">Stripe Payout</p>
+<p class="text-xs text-slate-400">Weekly disbursement</p>
+</div>
+<p class="text-sm font-bold text-emerald-500">+$24,120.00</p>
+</div>
+</div>
+</div>
+<div class="p-6 rounded-xl border border-primary/10 bg-white dark:bg-primary/5">
+<h4 class="font-bold mb-4">Live Activity</h4>
+<div class="flex items-center justify-center h-24">
+<div class="flex gap-1 items-end h-8">
+<div class="w-1 bg-primary rounded-full animate-pulse h-4"></div>
+<div class="w-1 bg-primary rounded-full animate-pulse h-6" style="animation-delay: 0.1s"></div>
+<div class="w-1 bg-primary rounded-full animate-pulse h-3" style="animation-delay: 0.2s"></div>
+<div class="w-1 bg-primary rounded-full animate-pulse h-8" style="animation-delay: 0.3s"></div>
+<div class="w-1 bg-primary rounded-full animate-pulse h-5" style="animation-delay: 0.4s"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

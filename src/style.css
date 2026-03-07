@@ -1,0 +1,522 @@
+.msgt-overlay-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.msgt-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+}
+
+.msgt-highlight {
+  position: absolute;
+  border-radius: 10px;
+  pointer-events: none;
+  transition: all 120ms ease;
+}
+
+.msgt-highlight-stroke {
+  position: absolute;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.msgt-highlight-stroke-rect {
+  fill: none;
+  stroke: rgb(255, 199, 0);
+  stroke-width: 4px;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  transition: stroke 120ms ease;
+}
+
+.msgt-highlight-stroke-rect--dash {
+  stroke-dasharray: 12 8;
+}
+
+.msgt-highlight-stroke-rect--anim-dash {
+  animation: msgt-highlight-dash-move 1.4s linear infinite;
+}
+
+.msgt-highlight-stroke-rect--anim-color {
+  animation: msgt-highlight-color-cycle 2.2s linear infinite;
+}
+
+.msgt-highlight-stroke-rect--anim-dash.msgt-highlight-stroke-rect--anim-color {
+  animation: msgt-highlight-dash-move 1.4s linear infinite,
+    msgt-highlight-color-cycle 2.2s linear infinite;
+}
+
+@keyframes msgt-highlight-dash-move {
+  to {
+    stroke-dashoffset: -80;
+  }
+}
+
+@keyframes msgt-highlight-color-cycle {
+  0%,
+  100% {
+    stroke: currentColor;
+  }
+
+  35% {
+    stroke: rgb(16, 185, 129);
+  }
+
+  70% {
+    stroke: rgb(14, 165, 233);
+  }
+}
+
+.msgt-guide-target-active {
+  position: relative !important;
+  z-index: 3005 !important;
+}
+
+.msgt-tooltip {
+  --msgt-font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    sans-serif;
+  --msgt-tooltip-bg: #ffffff;
+  --msgt-tooltip-text: rgb(0, 43, 69);
+  --msgt-tooltip-border: rgb(227, 234, 237);
+  --msgt-tooltip-border-radius: 12px;
+  --msgt-tooltip-shadow: 0 12px 30px rgba(0, 43, 69, 0.2);
+  --msgt-title-color: rgb(0, 43, 69);
+  --msgt-description-color: rgb(77, 94, 107);
+  --msgt-hint-color: rgb(77, 94, 107);
+  --msgt-warning-color: rgb(191, 28, 28);
+  --msgt-pill-step-bg: rgb(255, 245, 204);
+  --msgt-pill-step-text: rgb(0, 43, 69);
+  --msgt-pill-kind-bg: rgb(229, 244, 255);
+  --msgt-pill-kind-text: rgb(26, 99, 245);
+  --msgt-btn-ghost-bg: #ffffff;
+  --msgt-btn-ghost-text: rgb(0, 43, 69);
+  --msgt-btn-ghost-border: rgb(182, 199, 209);
+  --msgt-btn-primary-bg: rgb(26, 99, 245);
+  --msgt-btn-primary-text: #ffffff;
+  --msgt-btn-primary-border: rgb(26, 99, 245);
+  --msgt-btn-primary-hover-bg: rgb(15, 87, 225);
+  --msgt-btn-primary-hover-border: rgb(15, 87, 225);
+  --msgt-timer-track-bg: rgb(231, 238, 242);
+  --msgt-timer-fill-bg: rgb(26, 99, 245);
+  position: absolute;
+  pointer-events: auto;
+  background: var(--msgt-tooltip-bg);
+  border: 1px solid var(--msgt-tooltip-border);
+  border-radius: var(--msgt-tooltip-border-radius);
+  box-shadow: var(--msgt-tooltip-shadow);
+  padding: 14px;
+  color: var(--msgt-tooltip-text);
+  font-family: var(--msgt-font-family);
+}
+
+.msgt-tooltip--glass {
+  --msgt-tooltip-bg: rgba(255, 255, 255, 0.72);
+  --msgt-tooltip-border: rgba(179, 199, 214, 0.9);
+  --msgt-tooltip-shadow: 0 18px 38px rgba(0, 43, 69, 0.24);
+  --msgt-pill-step-bg: rgba(255, 255, 255, 0.7);
+  --msgt-pill-kind-bg: rgba(229, 244, 255, 0.78);
+  backdrop-filter: blur(10px) saturate(1.1);
+}
+
+.msgt-tooltip--minimal {
+  --msgt-tooltip-bg: #ffffff;
+  --msgt-tooltip-border: rgb(220, 229, 235);
+  --msgt-tooltip-border-radius: 8px;
+  --msgt-tooltip-shadow: none;
+  --msgt-pill-step-bg: transparent;
+  --msgt-pill-kind-bg: transparent;
+  --msgt-pill-step-text: rgb(77, 94, 107);
+  --msgt-pill-kind-text: rgb(77, 94, 107);
+}
+
+.msgt-tooltip--contrast {
+  --msgt-tooltip-bg: rgb(15, 23, 36);
+  --msgt-tooltip-text: rgb(236, 246, 255);
+  --msgt-tooltip-border: rgb(43, 59, 79);
+  --msgt-tooltip-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+  --msgt-title-color: rgb(246, 252, 255);
+  --msgt-description-color: rgb(181, 201, 217);
+  --msgt-hint-color: rgb(181, 201, 217);
+  --msgt-warning-color: rgb(255, 166, 166);
+  --msgt-pill-step-bg: rgba(255, 255, 255, 0.12);
+  --msgt-pill-step-text: rgb(246, 252, 255);
+  --msgt-pill-kind-bg: rgba(56, 138, 255, 0.22);
+  --msgt-pill-kind-text: rgb(167, 211, 255);
+  --msgt-btn-ghost-bg: rgb(22, 33, 49);
+  --msgt-btn-ghost-text: rgb(234, 246, 255);
+  --msgt-btn-ghost-border: rgb(58, 80, 105);
+  --msgt-btn-primary-bg: rgb(29, 106, 245);
+  --msgt-btn-primary-border: rgb(29, 106, 245);
+  --msgt-btn-primary-hover-bg: rgb(23, 90, 214);
+  --msgt-btn-primary-hover-border: rgb(23, 90, 214);
+  --msgt-timer-track-bg: rgb(41, 59, 81);
+  --msgt-timer-fill-bg: rgb(86, 166, 255);
+}
+
+.msgt-tooltip--dashboard-orange {
+  --msgt-tooltip-bg: rgb(10, 27, 58);
+  --msgt-tooltip-text: rgb(240, 247, 255);
+  --msgt-tooltip-border: rgb(245, 109, 22);
+  --msgt-tooltip-border-radius: 14px;
+  --msgt-tooltip-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
+  --msgt-title-color: rgb(255, 133, 52);
+  --msgt-description-color: rgb(224, 236, 250);
+  --msgt-hint-color: rgb(199, 217, 238);
+  --msgt-warning-color: rgb(255, 186, 151);
+  --msgt-pill-step-bg: rgb(245, 109, 22);
+  --msgt-pill-step-text: #ffffff;
+  --msgt-pill-kind-bg: rgba(255, 255, 255, 0.12);
+  --msgt-pill-kind-text: rgb(235, 244, 255);
+  --msgt-btn-ghost-bg: rgba(255, 255, 255, 0.04);
+  --msgt-btn-ghost-text: rgb(236, 246, 255);
+  --msgt-btn-ghost-border: rgb(245, 109, 22);
+  --msgt-btn-primary-bg: rgb(245, 109, 22);
+  --msgt-btn-primary-border: rgb(245, 109, 22);
+  --msgt-btn-primary-hover-bg: rgb(224, 92, 9);
+  --msgt-btn-primary-hover-border: rgb(224, 92, 9);
+  --msgt-timer-track-bg: rgb(30, 52, 90);
+  --msgt-timer-fill-bg: rgb(245, 109, 22);
+}
+
+.msgt-tooltip--dashboard-orange .msgt-tooltip-top {
+  margin: -14px -14px 12px;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(245, 109, 22, 0.5);
+  background: rgba(245, 109, 22, 0.08);
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}
+
+.msgt-tooltip--clean-white {
+  --msgt-tooltip-bg: #ffffff;
+  --msgt-tooltip-text: rgb(23, 39, 67);
+  --msgt-tooltip-border: rgb(247, 103, 14);
+  --msgt-tooltip-border-radius: 30px;
+  --msgt-tooltip-shadow: 0 24px 40px rgba(0, 0, 0, 0.18);
+  --msgt-title-color: rgb(20, 33, 62);
+  --msgt-description-color: rgb(78, 95, 121);
+  --msgt-hint-color: rgb(123, 141, 165);
+  --msgt-pill-step-bg: rgb(255, 239, 232);
+  --msgt-pill-step-text: rgb(245, 103, 14);
+  --msgt-pill-kind-bg: rgb(239, 244, 252);
+  --msgt-pill-kind-text: rgb(104, 123, 151);
+  --msgt-btn-ghost-bg: rgb(240, 244, 249);
+  --msgt-btn-ghost-text: rgb(24, 36, 59);
+  --msgt-btn-ghost-border: rgb(240, 244, 249);
+  --msgt-btn-primary-bg: rgb(245, 103, 14);
+  --msgt-btn-primary-border: rgb(245, 103, 14);
+  --msgt-btn-primary-hover-bg: rgb(224, 90, 10);
+  --msgt-btn-primary-hover-border: rgb(224, 90, 10);
+  --msgt-timer-fill-bg: rgb(245, 103, 14);
+  padding: 20px;
+}
+
+.msgt-tooltip--clean-white .msgt-title {
+  font-size: 18px;
+}
+
+.msgt-tooltip--clean-white .msgt-tooltip-actions {
+  margin-top: 18px;
+}
+
+.msgt-tooltip--commerce-dark {
+  --msgt-tooltip-bg: rgb(38, 20, 11);
+  --msgt-tooltip-text: rgb(245, 248, 255);
+  --msgt-tooltip-border: rgba(245, 109, 22, 0.5);
+  --msgt-tooltip-border-radius: 24px;
+  --msgt-tooltip-shadow: 0 26px 42px rgba(0, 0, 0, 0.5);
+  --msgt-title-color: rgb(248, 251, 255);
+  --msgt-description-color: rgb(175, 188, 209);
+  --msgt-hint-color: rgb(157, 172, 196);
+  --msgt-pill-step-bg: rgba(245, 109, 22, 0.16);
+  --msgt-pill-step-text: rgb(255, 134, 62);
+  --msgt-pill-kind-bg: rgba(255, 255, 255, 0.08);
+  --msgt-pill-kind-text: rgb(238, 244, 255);
+  --msgt-btn-ghost-bg: transparent;
+  --msgt-btn-ghost-text: rgb(246, 251, 255);
+  --msgt-btn-ghost-border: rgba(245, 109, 22, 0.4);
+  --msgt-btn-primary-bg: rgb(245, 103, 14);
+  --msgt-btn-primary-border: rgb(245, 103, 14);
+  --msgt-btn-primary-hover-bg: rgb(226, 89, 7);
+  --msgt-btn-primary-hover-border: rgb(226, 89, 7);
+  --msgt-timer-track-bg: rgba(255, 255, 255, 0.1);
+  --msgt-timer-fill-bg: rgb(245, 103, 14);
+}
+
+.msgt-tooltip--commerce-dark::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 40%;
+  width: 22px;
+  height: 22px;
+  transform: rotate(45deg);
+  border-left: 1px solid rgba(245, 109, 22, 0.5);
+  border-bottom: 1px solid rgba(245, 109, 22, 0.5);
+  background: rgb(38, 20, 11);
+  pointer-events: none;
+}
+
+.msgt-tooltip--terminal-pop {
+  --msgt-tooltip-bg: rgb(245, 103, 14);
+  --msgt-tooltip-text: #ffffff;
+  --msgt-tooltip-border: rgba(255, 255, 255, 0.15);
+  --msgt-tooltip-border-radius: 28px;
+  --msgt-tooltip-shadow: 0 22px 38px rgba(0, 0, 0, 0.35);
+  --msgt-title-color: #ffffff;
+  --msgt-description-color: rgba(255, 255, 255, 0.95);
+  --msgt-hint-color: rgba(255, 255, 255, 0.95);
+  --msgt-warning-color: rgb(50, 22, 0);
+  --msgt-pill-step-bg: rgba(255, 255, 255, 0.28);
+  --msgt-pill-step-text: #ffffff;
+  --msgt-pill-kind-bg: rgba(0, 0, 0, 0.14);
+  --msgt-pill-kind-text: #ffffff;
+  --msgt-btn-ghost-bg: #ffffff;
+  --msgt-btn-ghost-text: rgb(224, 95, 12);
+  --msgt-btn-ghost-border: #ffffff;
+  --msgt-btn-primary-bg: rgba(255, 255, 255, 0.24);
+  --msgt-btn-primary-text: #ffffff;
+  --msgt-btn-primary-border: rgba(255, 255, 255, 0.24);
+  --msgt-btn-primary-hover-bg: rgba(255, 255, 255, 0.34);
+  --msgt-btn-primary-hover-border: rgba(255, 255, 255, 0.34);
+  --msgt-timer-track-bg: rgba(255, 255, 255, 0.24);
+  --msgt-timer-fill-bg: #ffffff;
+  padding: 18px;
+}
+
+.msgt-tooltip--terminal-pop .msgt-title {
+  font-size: 18px;
+}
+
+.msgt-tooltip--outline-light {
+  --msgt-tooltip-bg: rgb(249, 251, 255);
+  --msgt-tooltip-text: rgb(18, 29, 57);
+  --msgt-tooltip-border: rgb(245, 103, 14);
+  --msgt-tooltip-border-radius: 24px;
+  --msgt-tooltip-shadow: 0 16px 34px rgba(0, 43, 69, 0.14);
+  --msgt-title-color: rgb(18, 29, 57);
+  --msgt-description-color: rgb(79, 96, 120);
+  --msgt-hint-color: rgb(109, 126, 148);
+  --msgt-pill-step-bg: rgb(255, 237, 228);
+  --msgt-pill-step-text: rgb(245, 103, 14);
+  --msgt-btn-ghost-bg: transparent;
+  --msgt-btn-ghost-text: rgb(110, 126, 148);
+  --msgt-btn-ghost-border: transparent;
+  --msgt-btn-primary-bg: rgb(245, 103, 14);
+  --msgt-btn-primary-border: rgb(245, 103, 14);
+  --msgt-btn-primary-hover-bg: rgb(223, 89, 10);
+  --msgt-btn-primary-hover-border: rgb(223, 89, 10);
+  --msgt-timer-fill-bg: rgb(245, 103, 14);
+  padding: 20px;
+}
+
+.msgt-tooltip--outline-light::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 34px;
+  width: 28px;
+  height: 28px;
+  transform: rotate(45deg);
+  background: rgb(249, 251, 255);
+  border-left: 2px solid rgb(245, 103, 14);
+  border-bottom: 2px solid rgb(245, 103, 14);
+  pointer-events: none;
+}
+
+.msgt-tooltip-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.msgt-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.msgt-pill-step {
+  background: var(--msgt-pill-step-bg);
+  color: var(--msgt-pill-step-text);
+}
+
+.msgt-pill-kind {
+  background: var(--msgt-pill-kind-bg);
+  color: var(--msgt-pill-kind-text);
+  font-weight: 600;
+}
+
+.msgt-title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 800;
+  color: var(--msgt-title-color);
+}
+
+.msgt-description {
+  margin: 6px 0 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--msgt-description-color);
+}
+
+.msgt-hint {
+  margin: 10px 0 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--msgt-hint-color);
+}
+
+.msgt-hint-warning {
+  color: var(--msgt-warning-color);
+  font-weight: 600;
+}
+
+.msgt-hint code {
+  background: rgba(0, 43, 69, 0.06);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: 12px;
+}
+
+.msgt-tooltip--contrast .msgt-hint code {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.msgt-timer-root {
+  margin-top: 10px;
+}
+
+.msgt-timer-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--msgt-timer-track-bg);
+  overflow: hidden;
+}
+
+.msgt-timer-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--msgt-timer-fill-bg);
+  transition: width 80ms linear;
+}
+
+.msgt-tooltip-actions {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.msgt-tooltip-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.msgt-btn {
+  border: 1px solid var(--msgt-btn-ghost-border);
+  background: var(--msgt-btn-ghost-bg);
+  color: var(--msgt-btn-ghost-text);
+  border-radius: 8px;
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.msgt-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.msgt-btn-primary {
+  background: var(--msgt-btn-primary-bg);
+  border-color: var(--msgt-btn-primary-border);
+  color: var(--msgt-btn-primary-text);
+}
+
+.msgt-btn-primary:hover:not(:disabled) {
+  background: var(--msgt-btn-primary-hover-bg);
+  border-color: var(--msgt-btn-primary-hover-border);
+}
+
+.msgt-btn-ghost {
+  background: var(--msgt-btn-ghost-bg);
+  color: var(--msgt-btn-ghost-text);
+  border-color: var(--msgt-btn-ghost-border);
+}
+
+.msgt-error-root {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+}
+
+.msgt-error-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 43, 69, 0.3);
+}
+
+.msgt-error-card {
+  position: relative;
+  margin: 64px auto;
+  width: min(760px, calc(100% - 32px));
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgb(227, 234, 237);
+  box-shadow: 0 14px 30px rgba(0, 43, 69, 0.22);
+  padding: 18px;
+}
+
+.msgt-error-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: rgb(0, 43, 69);
+}
+
+.msgt-error-subtitle {
+  margin: 6px 0 12px 0;
+  font-size: 14px;
+  color: rgb(77, 94, 107);
+}
+
+.msgt-error-list {
+  margin: 0;
+  max-height: 320px;
+  overflow: auto;
+  background: rgb(244, 248, 250);
+  border: 1px solid rgb(227, 234, 237);
+  border-radius: 8px;
+  padding: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New,
+    monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgb(0, 43, 69);
+}
+
+.msgt-error-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+}

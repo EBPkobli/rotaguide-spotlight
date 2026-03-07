@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MD Spotlight Guide Tool - Interactive Demo</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<style data-purpose="base-typography">
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a; /* Slate 900 */
+      color: #f8fafc; /* Slate 50 */
+    }
+  </style>
+<style data-purpose="custom-animations">
+    @keyframes pulse-border {
+      0%, 100% { border-color: rgba(56, 189, 248, 0.4); }
+      50% { border-color: rgba(56, 189, 248, 1); }
+    }
+    .animate-guide-pulse {
+      animation: pulse-border 2s infinite;
+    }
+    .glass-morphism {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<!-- BEGIN: HeroHeader -->
+<header class="pt-12 pb-8 px-6 text-center bg-gradient-to-b from-indigo-950 to-slate-900">
+<div class="inline-block px-3 py-1 mb-4 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-400 text-xs font-semibold tracking-wider uppercase">
+      New: Markdown v2.0 Support
+    </div>
+<h1 class="text-4xl font-extrabold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+      MD Spotlight Guide Tool
+    </h1>
+<p class="text-slate-400 text-lg mb-8 leading-relaxed max-w-md mx-auto">
+      Create powerful, interactive user walkthroughs using simple Markdown syntax.
+    </p>
+<button class="w-full max-w-xs py-4 px-8 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] transition-all rounded-xl font-bold shadow-lg shadow-indigo-500/20 text-white">
+      Start Full Feature Guide
+    </button>
+<div class="mt-4 text-slate-500 text-xs flex items-center justify-center gap-2">
+<kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700">Esc</kbd>
+<span>to close guide at any time</span>
+</div>
+</header>
+<!-- END: HeroHeader -->
+<main class="flex-grow px-4 pb-12 space-y-10">
+<!-- BEGIN: InteractiveDemoArea -->
+<section class="space-y-6" id="demo-area">
+<div class="flex items-center justify-between">
+<h2 class="text-sm font-semibold uppercase tracking-widest text-slate-500">Live Workspace</h2>
+<span class="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20 uppercase">Interactive</span>
+</div>
+<!-- Demo Trigger Button -->
+<div class="p-6 rounded-2xl border-2 border-dashed border-slate-700 flex justify-center items-center">
+<button class="px-6 py-3 bg-white text-slate-900 font-bold rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-2" id="open-booking-btn">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Open Booking Form
+        </button>
+</div>
+<!-- Booking Form Card (Spotlight Target Example) -->
+<div class="glass-morphism rounded-2xl p-6 shadow-2xl relative overflow-hidden group">
+<!-- Visual Overlay Indicator -->
+<div class="absolute inset-0 border-2 border-transparent group-hover:border-indigo-500/30 transition-colors pointer-events-none rounded-2xl"></div>
+<h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+          Booking Details
+          <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+</h3>
+<form class="space-y-5" onsubmit="return false;">
+<!-- Text Input -->
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-slate-400 uppercase tracking-tighter">Customer Name</label>
+<input class="w-full bg-slate-800/50 border-slate-700 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-slate-200" placeholder="e.g. John Doe" type="text"/>
+</div>
+<!-- Select Dropdown -->
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-slate-400 uppercase tracking-tighter">Plan</label>
+<select class="w-full bg-slate-800/50 border-slate-700 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-slate-200">
+<option>Basic Tier</option>
+<option>Professional</option>
+<option>Enterprise</option>
+</select>
+</div>
+<!-- Toggle -->
+<div class="flex items-center justify-between py-2">
+<label class="text-sm text-slate-300">Send confirmation email</label>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+</label>
+</div>
+<!-- Textarea -->
+<div class="space-y-1.5">
+<label class="text-xs font-medium text-slate-400 uppercase tracking-tighter">Internal Note</label>
+<textarea class="w-full bg-slate-800/50 border-slate-700 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-slate-200" placeholder="Notes for staff..." rows="3"></textarea>
+</div>
+<!-- Button -->
+<button class="w-full py-3 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-400 font-semibold rounded-lg border border-indigo-500/30 transition-all">
+            Save Booking
+          </button>
+</form>
+</div>
+</section>
+<!-- END: InteractiveDemoArea -->
+<!-- BEGIN: GuideStepMap -->
+<section class="space-y-4">
+<h2 class="text-sm font-semibold uppercase tracking-widest text-slate-500">Step Behavior Flow</h2>
+<div class="space-y-3">
+<!-- Step: Click -->
+<div class="flex items-center gap-4 p-4 glass-morphism rounded-xl">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 font-bold">1</div>
+<div class="flex-grow">
+<p class="font-medium">User Click</p>
+<p class="text-xs text-slate-400">behavior: <code class="text-yellow-400">click</code></p>
+</div>
+<span class="text-[10px] bg-slate-800 px-2 py-1 rounded text-slate-400">mustClickTarget</span>
+</div>
+<!-- Step: Input-Idle -->
+<div class="flex items-center gap-4 p-4 glass-morphism rounded-xl">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-500/10 text-blue-500 border border-blue-500/20 font-bold">2</div>
+<div class="flex-grow">
+<p class="font-medium">Form Typing</p>
+<p class="text-xs text-slate-400">behavior: <code class="text-blue-400">input-idle</code></p>
+</div>
+<span class="text-[10px] bg-slate-800 px-2 py-1 rounded text-slate-400">mustEnterValue</span>
+</div>
+<!-- Step: Manual -->
+<div class="flex items-center gap-4 p-4 glass-morphism rounded-xl border border-indigo-500/30">
+<div class="w-10 h-10 flex items-center justify-center rounded-lg bg-indigo-500 text-white font-bold">3</div>
+<div class="flex-grow">
+<p class="font-medium">Information Step</p>
+<p class="text-xs text-slate-400">behavior: <code class="text-indigo-400">manual next</code></p>
+</div>
+<span class="text-[10px] bg-indigo-500/20 px-2 py-1 rounded text-indigo-400">skippable</span>
+</div>
+</div>
+</section>
+<!-- END: GuideStepMap -->
+<!-- BEGIN: FeatureShowcase -->
+<section class="grid grid-cols-2 gap-4">
+<!-- Timer Card -->
+<div class="col-span-2 glass-morphism p-5 rounded-2xl relative overflow-hidden">
+<div class="flex justify-between items-center mb-3">
+<h4 class="text-xs font-bold uppercase text-slate-500">Auto-Progression</h4>
+<span class="text-[10px] font-mono text-indigo-400">Timer: 5000ms</span>
+</div>
+<div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+<div class="bg-indigo-500 h-full w-[65%] rounded-full"></div>
+</div>
+<p class="mt-2 text-[10px] text-slate-500 italic">Fallback order: step -&gt; global -&gt; default</p>
+</div>
+<!-- Highlight Style Demos -->
+<div class="p-4 glass-morphism rounded-2xl flex flex-col items-center justify-center gap-3">
+<div class="w-full h-8 border-2 border-indigo-400 rounded flex items-center justify-center text-[10px] font-mono text-indigo-300">
+          highlightStyle: line
+        </div>
+<div class="w-full h-8 border-2 border-dashed border-indigo-400 rounded flex items-center justify-center text-[10px] font-mono text-indigo-300">
+          highlightStyle: dash
+        </div>
+</div>
+<!-- Resolution Mode Card -->
+<div class="p-4 glass-morphism rounded-2xl space-y-2">
+<p class="text-[10px] uppercase font-bold text-slate-500">Engine Logic</p>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+<span class="text-sm">Auto mode resolution</span>
+</div>
+<div class="pt-2 flex flex-wrap gap-1">
+<span class="px-1.5 py-0.5 rounded bg-slate-800 text-[9px] text-slate-400">draggable: true</span>
+<span class="px-1.5 py-0.5 rounded bg-slate-800 text-[9px] text-slate-400">z-index: 9999</span>
+</div>
+</div>
+</section>
+<!-- END: FeatureShowcase -->
+<!-- BEGIN: DebugValidation -->
+<section class="space-y-4">
+<h2 class="text-sm font-semibold uppercase tracking-widest text-slate-500">Validation &amp; Errors</h2>
+<!-- Target Warning -->
+<div class="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3">
+<svg class="h-5 w-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<div>
+<p class="text-sm font-bold text-red-400">Target not found</p>
+<p class="text-xs text-red-400/70">Selector <code class="bg-red-500/20 px-1 rounded">#sidebar-menu</code> failed to resolve in DOM.</p>
+</div>
+</div>
+<!-- Invalid Markdown Modal Concept -->
+<div class="bg-slate-800/80 border border-slate-700 p-5 rounded-2xl shadow-inner">
+<div class="flex justify-between items-center mb-4">
+<h4 class="text-sm font-bold text-slate-200">Invalid Markdown Syntax</h4>
+<span class="text-xs font-mono text-slate-500">config.md</span>
+</div>
+<div class="space-y-2 font-mono text-[11px]">
+<div class="flex gap-4 text-slate-500">
+<span>23</span>
+<span class="text-slate-300">## Step 04: Profile Config</span>
+</div>
+<div class="flex gap-4 bg-red-500/20 -mx-5 px-5 py-1">
+<span class="text-red-400">24</span>
+<span class="text-red-200">@behavior: unknown-action</span>
+<span class="ml-auto text-red-400 font-bold">[ERR_MD_09]</span>
+</div>
+<div class="flex gap-4 text-slate-500">
+<span>25</span>
+<span class="text-slate-300">This step requires a valid...</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: DebugValidation -->
+</main>
+<!-- BEGIN: FooterNavigation -->
+<footer class="p-6 border-t border-slate-800 text-center space-y-4">
+<p class="text-slate-500 text-sm">Built for high-performance product teams.</p>
+<div class="flex justify-center gap-6">
+<a class="text-xs text-slate-400 hover:text-white transition-colors" href="#">Documentation</a>
+<a class="text-xs text-slate-400 hover:text-white transition-colors" href="#">GitHub</a>
+<a class="text-xs text-slate-400 hover:text-white transition-colors" href="#">Discord</a>
+</div>
+</footer>
+<!-- END: FooterNavigation -->
+<script data-purpose="demo-interactivity">
+    // Simple visual feedback for the demo
+    const openBtn = document.getElementById('open-booking-btn');
+    if (openBtn) {
+      openBtn.addEventListener('click', () => {
+        openBtn.classList.add('animate-guide-pulse');
+        setTimeout(() => {
+          openBtn.classList.remove('animate-guide-pulse');
+          alert('Demo Tooltip: This button would trigger a guide step sequence.');
+        }, 1500);
+      });
+    }
+  </script>
+</body></html>
