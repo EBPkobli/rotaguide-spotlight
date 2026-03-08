@@ -1,6 +1,6 @@
 {
   "name": "rotaguide-spotlight",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "RotaGuide Spotlight: markdown, JSON, and YAML-driven spotlight walkthroughs for React apps",
   "license": "MIT",
   "type": "module",
@@ -32,6 +32,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "GUIDE_MD_STANDARD.md",
     "TOOL_FEATURES_GUIDE.md"
   ],

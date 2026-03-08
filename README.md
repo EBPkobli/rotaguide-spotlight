@@ -2,6 +2,8 @@
 
 Markdown / JSON / YAML-driven, click-through spotlight walkthrough for React applications.
 
+Latest release notes: see [CHANGELOG.md](./CHANGELOG.md).
+
 - Start guide from a button or custom trigger events
 - Black transparent backdrop + yellow focus mask
 - Step-by-step progression from markdown, JSON, or YAML content
