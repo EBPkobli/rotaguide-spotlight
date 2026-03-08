@@ -4,6 +4,13 @@ Markdown / JSON / YAML-driven, click-through spotlight walkthrough for React app
 
 Latest release notes: see [CHANGELOG.md](./CHANGELOG.md).
 
+| | Link |
+|---|---|
+| **Landing Page** | [rotaguide-commercial.vercel.app](https://rotaguide-commercial.vercel.app) |
+| **Guide Editor** | [rotaguide-spotlight-editor.vercel.app](https://rotaguide-spotlight-editor.vercel.app) |
+| **Editor GitHub** | [github.com/EBPkobli/rotaguide-spotlight-editor](https://github.com/EBPkobli/rotaguide-spotlight-editor) |
+| **Medium Article** | [Building RotaGuide Spotlight](https://medium.com/@furkansteam81/building-rotaguide-spotlight-a-lightweight-guide-system-for-complex-web-apps-23e2e49ed09d) |
+
 - Start guide from a button or custom trigger events
 - Black transparent backdrop + yellow focus mask
 - Step-by-step progression from markdown, JSON, or YAML content
