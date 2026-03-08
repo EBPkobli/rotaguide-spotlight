@@ -360,3 +360,136 @@ Use:
 - `parseGuideContentSafe(content, { format: "auto" | "markdown" | "json" | "yaml" })` for non-throwing results
 - `parseGuideContent(content, { format })` to throw `GuideParseError`
 - `parseGuideMarkdownSafe/parseGuideMarkdown` are backward-compatible aliases (now auto format)
+
+## 8. Guide Triggering (React)
+
+Guide content format is independent from how you trigger the UI.
+
+### 8.1 `MarkdownGuideButton` (default)
+
+```tsx
+import { MarkdownGuideButton } from "rotaguide-spotlight";
+
+<MarkdownGuideButton content={guideContent} label="Start Guide" />
+```
+
+### 8.2 `MarkdownGuideTrigger` (any wrapper element + events)
+
+`MarkdownGuideTrigger` lets you wrap any element and start the guide via `click`, `hover`, `focus` (single or multiple).
+
+```tsx
+import { MarkdownGuideTrigger } from "rotaguide-spotlight";
+
+<MarkdownGuideTrigger content={guideContent} triggerOn={["hover", "focus"]} as="div">
+  <section className="tour-card">Hover or focus this card to start</section>
+</MarkdownGuideTrigger>
+```
+
+Main props:
+- `triggerOn?: "click" | "hover" | "focus" | Array<...>` (default: `"click"`)
+- `as?: keyof JSX.IntrinsicElements` wrapper tag (default: `"span"`)
+- `children: ReactNode | ((params) => ReactNode)`
+
+### 8.3 Manual trigger inside custom handlers (`onClick`, etc.)
+
+Use render-function children to get `startGuide()` and call it inside your own event flow:
+
+```tsx
+<MarkdownGuideTrigger content={guideContent}>
+  {({ startGuide, triggerProps }) => (
+    <button
+      type="button"
+      {...triggerProps}
+      onClick={() => {
+        // your custom logic
+        startGuide();
+      }}
+    >
+      Start with custom onClick
+    </button>
+  )}
+</MarkdownGuideTrigger>
+```
+
+## 9. Agent-Friendly Integration Guide
+
+This section is optimized for coding agents that need deterministic integration steps.
+
+### 9.1 Agent Objective
+
+Given this library and a target React app, the agent should:
+- map UI targets with `data-click-guide` (or CSS selectors),
+- load guide content (`markdown` / `json` / `yaml`),
+- choose a trigger strategy (`MarkdownGuideButton` or `MarkdownGuideTrigger`),
+- verify parse and runtime target resolution.
+
+### 9.2 Deterministic Integration Checklist
+
+1. Import styles exactly once:
+   - `import "rotaguide-spotlight/style.css";`
+2. Add guide targets in UI:
+   - preferred: `...guideTarget("some-id")`
+   - equivalent: `data-click-guide="some-id"`
+3. Ensure each step `target`/`targets` exists in rendered DOM.
+4. Provide guide content string and correct `format` (`auto` unless strict format needed).
+5. Choose trigger mode:
+   - simple CTA: `MarkdownGuideButton`
+   - wrapper/event/manual control: `MarkdownGuideTrigger`
+6. Validate content before shipping:
+   - `parseGuideContentSafe(content, { format })`
+   - block release if `issues.length > 0`
+7. Runtime smoke test:
+   - start guide
+   - confirm first step highlight appears
+   - confirm navigation/close works
+
+### 9.3 Machine-Readable Integration Contract
+
+Agents can return integration result using this JSON shape:
+
+```json
+{
+  "integrationStatus": "ready",
+  "guideFormat": "markdown",
+  "triggerStrategy": "MarkdownGuideTrigger",
+  "targetMapping": {
+    "mapped": ["open-create", "customer-name", "save-booking"],
+    "missing": []
+  },
+  "parse": {
+    "ok": true,
+    "issueCount": 0
+  },
+  "runtimeSmokeTest": {
+    "guideOpened": true,
+    "firstStepVisible": true,
+    "closeWorks": true
+  }
+}
+```
+
+Allowed values:
+- `integrationStatus`: `ready | blocked | partial`
+- `guideFormat`: `auto | markdown | json | yaml`
+- `triggerStrategy`: `MarkdownGuideButton | MarkdownGuideTrigger`
+
+### 9.4 Recommended Agent Decision Rules
+
+- If the app already has a start button: use `MarkdownGuideButton`.
+- If guide start must be tied to existing app events (`onClick`, `onHover`, `onFocus`): use `MarkdownGuideTrigger`.
+- If existing business logic must run before opening guide: use render-function children and call `startGuide()` manually.
+- If parser returns issues: do not mount trigger as production-ready; surface `formatGuideIssues(issues)`.
+
+### 9.5 Minimal Agent Prompt Template
+
+Use this prompt for another coding agent:
+
+```txt
+Integrate rotaguide-spotlight into this React app.
+Constraints:
+1) Keep existing UI behavior unchanged.
+2) Add data-click-guide mappings for all guide step targets.
+3) Use MarkdownGuideTrigger with manual startGuide() inside existing onClick handlers when custom logic exists.
+4) Validate with parseGuideContentSafe(format:auto) and report issues.
+5) Return result in the integration contract JSON from GUIDE_MD_STANDARD.md section 9.3.
+```

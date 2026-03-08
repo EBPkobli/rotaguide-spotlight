@@ -25,6 +25,31 @@ export function Page() {
 
 `guideTarget("x")` is a helper for `data-click-guide="x"`.
 
+### Custom trigger start (wrapper + events)
+
+```tsx
+import { MarkdownGuideTrigger } from "rotaguide-spotlight";
+
+<MarkdownGuideTrigger content={guideContent} triggerOn={["hover", "focus"]} as="div">
+  <section className="tour-card">Hover or focus this card to start guide</section>
+</MarkdownGuideTrigger>
+
+<MarkdownGuideTrigger content={guideContent}>
+  {({ startGuide, triggerProps }) => (
+    <button
+      type="button"
+      {...triggerProps}
+      onClick={() => {
+        // custom click logic
+        startGuide();
+      }}
+    >
+      Start with custom onClick
+    </button>
+  )}
+</MarkdownGuideTrigger>
+```
+
 ## 2. Markdown Structure
 
 Your markdown can include optional frontmatter, then one or more step sections.
@@ -247,6 +272,7 @@ targets:
 ### Other Public Exports
 
 - `SpotlightGuideOverlay`
+- `MarkdownGuideTrigger`
 - `GuideParseError`
 - `formatGuideIssues()`
 - `guideTarget()`
@@ -298,7 +324,40 @@ interface MarkdownGuideButtonProps {
 }
 ```
 
-## 11. Full Feature Example Markdown
+## 11. `MarkdownGuideTrigger` Props
+
+```ts
+type GuideTriggerEvent = "click" | "hover" | "focus";
+
+interface MarkdownGuideTriggerProps {
+  content?: string;
+  markdown?: string; // backward-compatible alias
+  format?: "auto" | "markdown" | "json" | "yaml";
+  triggerOn?: GuideTriggerEvent | GuideTriggerEvent[]; // default: "click"
+  as?: keyof JSX.IntrinsicElements; // default: "span"
+  className?: string; // wrapper mode
+  style?: React.CSSProperties; // wrapper mode
+  disabled?: boolean;
+  overlayZIndex?: number;
+  children:
+    | React.ReactNode
+    | ((params: {
+        startGuide: () => void;
+        label: string;
+        disabled: boolean;
+        triggerProps: {
+          onClick?: () => void;
+          onMouseEnter?: () => void;
+          onFocus?: () => void;
+        };
+      }) => React.ReactNode);
+  onGuideStart?: (guide: GuideDefinition) => void;
+  onGuideClose?: () => void;
+  onParseError?: (issues: GuideIssue[]) => void;
+}
+```
+
+## 12. Full Feature Example Markdown
 
 ````md
 ---

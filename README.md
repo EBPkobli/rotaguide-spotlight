@@ -2,7 +2,7 @@
 
 Markdown / JSON / YAML-driven, click-through spotlight walkthrough for React applications.
 
-- Single button to start guide
+- Start guide from a button or custom trigger events
 - Black transparent backdrop + yellow focus mask
 - Step-by-step progression from markdown, JSON, or YAML content
 - Multi-target spotlighting in a single step
@@ -41,6 +41,33 @@ export function CreatePage() {
     </div>
   );
 }
+```
+
+## Custom Triggers (Click / Hover / Focus / Manual)
+
+You can start the same guide without `MarkdownGuideButton` by using `MarkdownGuideTrigger`.
+
+```tsx
+import { MarkdownGuideTrigger } from "rotaguide-spotlight";
+
+<MarkdownGuideTrigger content={guideMarkdown} triggerOn={["hover", "focus"]} as="div">
+  <section className="tour-card">Hover or focus this card to start</section>
+</MarkdownGuideTrigger>
+
+<MarkdownGuideTrigger content={guideMarkdown}>
+  {({ startGuide, triggerProps }) => (
+    <button
+      type="button"
+      {...triggerProps}
+      onClick={() => {
+        console.log("your custom click logic");
+        startGuide();
+      }}
+    >
+      Start from custom onClick
+    </button>
+  )}
+</MarkdownGuideTrigger>
 ```
 
 `guideTarget("x")` is a helper for adding `data-click-guide="x"`.
@@ -158,6 +185,29 @@ Props:
 If both `content` and `markdown` are set, `content` is used.
 `GuideI18n` and `GuideTheme` types are exported for TypeScript usage.
 
+### `MarkdownGuideTrigger`
+
+Props:
+- `content?: string` (`markdown` string content, JSON string, or YAML string)
+- `markdown?: string` (legacy alias, still supported)
+- `format?: "auto" | "markdown" | "json" | "yaml"` (default: `auto`)
+- `triggerOn?: "click" | "hover" | "focus" | Array<...>` (default: `"click"`)
+- `as?: keyof JSX.IntrinsicElements` (default: `"span"`, used for wrapper mode)
+- `children: ReactNode | ((params) => ReactNode)`
+- `className?: string` (wrapper mode)
+- `style?: React.CSSProperties` (wrapper mode)
+- `disabled?: boolean`
+- `overlayZIndex?: number`
+- `onGuideStart?: (guide) => void`
+- `onGuideClose?: () => void`
+- `onParseError?: (issues) => void`
+
+Render function params:
+- `startGuide: () => void` (manual trigger support inside your own handlers)
+- `label: string` (`meta.buttonLabel` fallback)
+- `disabled: boolean`
+- `triggerProps: { onClick?, onMouseEnter?, onFocus? }`
+
 ### `parseGuideContentSafe(content, options?)`
 
 Returns:
@@ -183,6 +233,7 @@ Returns parsed guide or throws `GuideParseError`.
 ### Other Exports
 
 - `SpotlightGuideOverlay`
+- `MarkdownGuideTrigger`
 - `GuideParseError`
 - `formatGuideIssues()`
 - `guideTarget()`

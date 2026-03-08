@@ -1,5 +1,11 @@
 export { MarkdownGuideButton } from "./MarkdownGuideButton";
 export type { MarkdownGuideButtonProps } from "./MarkdownGuideButton";
+export { MarkdownGuideTrigger } from "./MarkdownGuideTrigger";
+export type {
+  GuideTriggerEvent,
+  MarkdownGuideTriggerProps,
+  MarkdownGuideTriggerRenderParams,
+} from "./MarkdownGuideTrigger";
 
 export { SpotlightGuideOverlay } from "./SpotlightGuideOverlay";
 export type { SpotlightGuideOverlayProps } from "./SpotlightGuideOverlay";
