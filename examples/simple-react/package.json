@@ -12,7 +12,7 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "rotaguide-spotlight": "1.1.2"
+    "rotaguide-spotlight": "1.1.3"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

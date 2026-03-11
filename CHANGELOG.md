@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.3 - 2026-03-12
+
+### Fixed
+- Publishes the verified `Next` button runtime fix so `actions.showNext: true` works for `advanceOn: "auto"` steps in the editor and app runtime.
+- Keeps the headerless tooltip title alignment fix in the published tarball.
+
 ## 1.1.2 - 2026-03-12
 
 ### Fixed
