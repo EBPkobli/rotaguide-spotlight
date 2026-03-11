@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1 - 2026-03-12
+
+### Fixed
+- Tooltip titles now sit higher when header pills are hidden, so the content no longer feels pushed down by an empty header row.
+- `Next` is visible again in the example tooltip flows, including steps that also support click/change/input-driven advancement.
+
+### Updated
+- Example app package pin is prepared for `1.1.1` manual upgrades.
+
 ## 1.1.0 - 2026-03-11
 
 ### Added

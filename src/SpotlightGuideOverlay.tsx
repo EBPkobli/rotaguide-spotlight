@@ -1047,9 +1047,7 @@ export function SpotlightGuideOverlay({
   const showKindPill = Boolean(currentStep && isUiToggleEnabled(resolvedPills.showKind));
   const showCloseButton = Boolean(currentStep && isUiToggleEnabled(resolvedActions.showClose));
   const showBackButton = Boolean(currentStep && isUiToggleEnabled(resolvedActions.showBack));
-  const showNextButton = Boolean(
-    currentStep && mode === "none" && isUiToggleEnabled(resolvedActions.showNext)
-  );
+  const showNextButton = Boolean(currentStep && isUiToggleEnabled(resolvedActions.showNext));
   const showSkipButton = Boolean(
     currentStep && canSkip && isUiToggleEnabled(resolvedActions.showSkip)
   );
@@ -1252,7 +1250,9 @@ export function SpotlightGuideOverlay({
             <>
               {showTooltipTop && (
                 <div
-                  className={`msgt-tooltip-top${hasVisiblePills ? "" : " msgt-tooltip-top--minimal"}`}
+                  className={`msgt-tooltip-top${
+                    hasVisiblePills ? "" : " msgt-tooltip-top--minimal msgt-tooltip-top--floating"
+                  }`}
                   style={{ cursor: draggable ? (dragOffset ? "grabbing" : "grab") : "default" }}
                   onPointerDown={(event) => {
                     if (!draggable) return;
