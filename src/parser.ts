@@ -2,6 +2,7 @@ import { load as loadYaml } from "js-yaml";
 import { GuideParseError } from "./errors";
 import type {
   GuideAdvanceMode,
+  GuideActions,
   GuideDefinition,
   GuideHighlightAnimation,
   GuideHighlightStyle,
@@ -9,9 +10,12 @@ import type {
   GuideIssue,
   GuideKind,
   GuideMeta,
+  GuidePills,
+  GuidePrimaryAction,
   GuideSourceFormat,
   GuideStep,
   GuideTheme,
+  GuideTextTransform,
   GuideTooltipPlacement,
   GuideTooltipTemplate,
 } from "./types";
@@ -167,6 +171,10 @@ function toOptionalNumber(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
 }
 
+function toOptionalBoolean(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
+}
+
 function parseStringList(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value
@@ -234,6 +242,25 @@ function parseHighlightAnimation(value: unknown): GuideHighlightAnimation | unde
   return normalized as GuideHighlightAnimation;
 }
 
+function parsePrimaryAction(value: unknown): GuidePrimaryAction | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return undefined;
+  if (normalized === "prev" || normalized === "previous") return "back";
+  if (normalized === "continue" || normalized === "forward") return "next";
+  if (normalized === "bypass") return "skip";
+  return normalized as GuidePrimaryAction;
+}
+
+function parseTextTransform(value: unknown): GuideTextTransform | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return undefined;
+  if (normalized === "upper" || normalized === "upper-case") return "uppercase";
+  if (normalized === "lower" || normalized === "lower-case") return "lowercase";
+  return normalized as GuideTextTransform;
+}
+
 function parseTooltipPlacement(value: unknown): GuideTooltipPlacement | undefined {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim().toLowerCase();
@@ -269,6 +296,85 @@ function parseTooltipTemplate(value: unknown): GuideTooltipTemplate | undefined 
     return "outline-light";
   }
   return normalized as GuideTooltipTemplate;
+}
+
+function parsePills(raw: Record<string, unknown>): GuidePills | undefined {
+  const nested =
+    asRecord(raw.pills) ??
+    asRecord(raw.badges) ??
+    asRecord(raw.tags) ??
+    {};
+  const pills: GuidePills = {
+    showStepProgress:
+      toOptionalBoolean(nested.showStepProgress) ??
+      toOptionalBoolean(nested.showStepProgressPill) ??
+      toOptionalBoolean(nested.showStepPill) ??
+      toOptionalBoolean(nested.stepProgress) ??
+      toOptionalBoolean(nested.step) ??
+      toOptionalBoolean(raw.showStepProgress) ??
+      toOptionalBoolean(raw.showStepProgressPill) ??
+      toOptionalBoolean(raw.showStepPill) ??
+      toOptionalBoolean(raw.showPhaseTag) ??
+      toOptionalBoolean(raw.showPhasePill),
+    showKind:
+      toOptionalBoolean(nested.showKind) ??
+      toOptionalBoolean(nested.showKindPill) ??
+      toOptionalBoolean(nested.kind) ??
+      toOptionalBoolean(raw.showKind) ??
+      toOptionalBoolean(raw.showKindPill) ??
+      toOptionalBoolean(raw.showKindTag) ??
+      toOptionalBoolean(raw.showListTag),
+  };
+
+  if (Object.values(pills).every((value) => typeof value === "undefined")) {
+    return undefined;
+  }
+  return pills;
+}
+
+function parseActions(raw: Record<string, unknown>): GuideActions | undefined {
+  const nested =
+    asRecord(raw.actions) ??
+    asRecord(raw.buttons) ??
+    asRecord(raw.navigation) ??
+    {};
+  const actions: GuideActions = {
+    showClose:
+      toOptionalBoolean(nested.showClose) ??
+      toOptionalBoolean(nested.close) ??
+      toOptionalBoolean(nested.showDismiss) ??
+      toOptionalBoolean(raw.showClose) ??
+      toOptionalBoolean(raw.showCloseButton) ??
+      toOptionalBoolean(raw.showDismiss) ??
+      toOptionalBoolean(raw.showDismissButton) ??
+      toOptionalBoolean(raw.dismissible),
+    showBack:
+      toOptionalBoolean(nested.showBack) ??
+      toOptionalBoolean(nested.back) ??
+      toOptionalBoolean(raw.showBack) ??
+      toOptionalBoolean(raw.showBackButton),
+    showNext:
+      toOptionalBoolean(nested.showNext) ??
+      toOptionalBoolean(nested.next) ??
+      toOptionalBoolean(raw.showNext) ??
+      toOptionalBoolean(raw.showNextButton),
+    showSkip:
+      toOptionalBoolean(nested.showSkip) ??
+      toOptionalBoolean(nested.skip) ??
+      toOptionalBoolean(raw.showSkip) ??
+      toOptionalBoolean(raw.showSkipButton),
+    primaryAction: parsePrimaryAction(
+      nested.primaryAction ??
+        nested.primary ??
+        raw.primaryAction ??
+        raw.primaryButton
+    ),
+  };
+
+  if (Object.values(actions).every((value) => typeof value === "undefined")) {
+    return undefined;
+  }
+  return actions;
 }
 
 function parseI18n(raw: Record<string, unknown>): GuideI18n | undefined {
@@ -320,6 +426,10 @@ function parseTheme(raw: Record<string, unknown>): GuideTheme | undefined {
     stepPillTextColor: toOptionalTrimmedString(raw.stepPillTextColor),
     kindPillBackgroundColor: toOptionalTrimmedString(raw.kindPillBackgroundColor),
     kindPillTextColor: toOptionalTrimmedString(raw.kindPillTextColor),
+    pillFontSize: toOptionalNumber(raw.pillFontSize),
+    pillFontWeight: toOptionalNumber(raw.pillFontWeight),
+    pillLetterSpacing: toOptionalTrimmedString(raw.pillLetterSpacing),
+    pillTextTransform: parseTextTransform(raw.pillTextTransform),
     primaryButtonBackgroundColor: toOptionalTrimmedString(raw.primaryButtonBackgroundColor),
     primaryButtonTextColor: toOptionalTrimmedString(raw.primaryButtonTextColor),
     primaryButtonBorderColor: toOptionalTrimmedString(raw.primaryButtonBorderColor),
@@ -395,6 +505,10 @@ function parseMetaTheme(raw: Record<string, unknown>): GuideTheme | undefined {
     stepPillTextColor: nested.stepPillTextColor ?? raw.stepPillTextColor,
     kindPillBackgroundColor: nested.kindPillBackgroundColor ?? raw.kindPillBackgroundColor,
     kindPillTextColor: nested.kindPillTextColor ?? raw.kindPillTextColor,
+    pillFontSize: nested.pillFontSize ?? raw.pillFontSize,
+    pillFontWeight: nested.pillFontWeight ?? raw.pillFontWeight,
+    pillLetterSpacing: nested.pillLetterSpacing ?? raw.pillLetterSpacing,
+    pillTextTransform: nested.pillTextTransform ?? raw.pillTextTransform,
     primaryButtonBackgroundColor:
       nested.primaryButtonBackgroundColor ?? raw.primaryButtonBackgroundColor,
     primaryButtonTextColor: nested.primaryButtonTextColor ?? raw.primaryButtonTextColor,
@@ -414,6 +528,8 @@ function parseMetaTheme(raw: Record<string, unknown>): GuideTheme | undefined {
 
 function buildMetaFromRaw(raw: Record<string, unknown>): GuideMeta {
   const theme = parseMetaTheme(raw);
+  const pills = parsePills(raw);
+  const actions = parseActions(raw);
   return {
     id:
       typeof raw.id === "string" && raw.id.trim().length > 0
@@ -436,6 +552,8 @@ function buildMetaFromRaw(raw: Record<string, unknown>): GuideMeta {
       parseTooltipTemplate(raw.tooltipTemplate ?? raw.tooltipVariant ?? raw.template) ??
       theme?.tooltipTemplate,
     i18n: parseMetaI18n(raw),
+    pills,
+    actions,
     theme,
   };
 }
@@ -461,6 +579,8 @@ function parseStep(
       ? parsed.timeoutMs
       : undefined;
   const i18n = parseMetaI18n(parsed);
+  const pills = parsePills(parsed);
+  const actions = parseActions(parsed);
   const theme = parseMetaTheme(parsed);
   const aliasedTargets = collectStepTargets(parsed);
   const rawPrimaryTarget = toOptionalTrimmedString(parsed.target);
@@ -507,6 +627,8 @@ function parseStep(
     mustEnterValue:
       typeof parsed.mustEnterValue === "boolean" ? parsed.mustEnterValue : undefined,
     i18n,
+    pills,
+    actions,
     theme,
   };
 }

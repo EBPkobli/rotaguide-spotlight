@@ -101,6 +101,10 @@
   --msgt-pill-step-text: rgb(0, 43, 69);
   --msgt-pill-kind-bg: rgb(229, 244, 255);
   --msgt-pill-kind-text: rgb(26, 99, 245);
+  --msgt-pill-font-size: 11px;
+  --msgt-pill-font-weight: 600;
+  --msgt-pill-letter-spacing: 0.02em;
+  --msgt-pill-text-transform: none;
   --msgt-btn-ghost-bg: #ffffff;
   --msgt-btn-ghost-text: rgb(0, 43, 69);
   --msgt-btn-ghost-border: rgb(182, 199, 209);
@@ -348,14 +352,33 @@
   touch-action: none;
 }
 
+.msgt-tooltip-top--minimal {
+  margin-bottom: 6px;
+}
+
+.msgt-tooltip-top-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.msgt-tooltip-top--minimal .msgt-tooltip-top-left {
+  min-height: 8px;
+}
+
 .msgt-pill {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
   padding: 3px 8px;
-  font-size: 12px;
+  font-size: var(--msgt-pill-font-size);
   line-height: 1;
-  font-weight: 700;
+  font-weight: var(--msgt-pill-font-weight);
+  letter-spacing: var(--msgt-pill-letter-spacing);
+  text-transform: var(--msgt-pill-text-transform);
 }
 
 .msgt-pill-step {
@@ -366,7 +389,34 @@
 .msgt-pill-kind {
   background: var(--msgt-pill-kind-bg);
   color: var(--msgt-pill-kind-text);
-  font-weight: 600;
+}
+
+.msgt-tooltip-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--msgt-hint-color);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.msgt-tooltip-dismiss:hover {
+  background: var(--msgt-btn-ghost-bg);
+  border-color: var(--msgt-btn-ghost-border);
+  color: var(--msgt-btn-ghost-text);
+}
+
+.msgt-tooltip-dismiss:focus-visible {
+  outline: 2px solid var(--msgt-btn-primary-border);
+  outline-offset: 2px;
 }
 
 .msgt-title {
@@ -431,17 +481,15 @@
   margin-top: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.msgt-tooltip-right-actions {
-  display: flex;
-  align-items: center;
+  justify-content: flex-end;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .msgt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--msgt-btn-ghost-border);
   background: var(--msgt-btn-ghost-bg);
   color: var(--msgt-btn-ghost-text);
@@ -452,6 +500,7 @@
   line-height: 1.2;
   font-weight: 600;
   cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
 .msgt-btn:disabled {

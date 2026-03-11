@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import type {
+  GuideActions,
   GuideDefinition,
   GuideHighlightAnimation,
   GuideHighlightStyle,
   GuideI18n,
+  GuidePills,
+  GuidePrimaryAction,
   GuideStep,
   GuideTheme,
   GuideTooltipPlacement,
@@ -54,6 +57,13 @@ interface StepRequirements {
   requireInput: boolean;
 }
 
+interface TooltipActionButton {
+  key: GuidePrimaryAction;
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+}
+
 interface GuideTextSet {
   stepProgressLabel: string;
   backButtonLabel: string;
@@ -87,6 +97,10 @@ type TooltipStyleVars = CSSProperties & {
   "--msgt-pill-step-text"?: string;
   "--msgt-pill-kind-bg"?: string;
   "--msgt-pill-kind-text"?: string;
+  "--msgt-pill-font-size"?: string;
+  "--msgt-pill-font-weight"?: string;
+  "--msgt-pill-letter-spacing"?: string;
+  "--msgt-pill-text-transform"?: string;
   "--msgt-btn-primary-bg"?: string;
   "--msgt-btn-primary-text"?: string;
   "--msgt-btn-primary-border"?: string;
@@ -240,6 +254,38 @@ function resolveTheme(metaTheme?: GuideTheme, stepTheme?: GuideTheme): GuideThem
   };
 }
 
+function resolvePills(metaPills?: GuidePills, stepPills?: GuidePills): GuidePills {
+  return {
+    ...(metaPills ?? {}),
+    ...(stepPills ?? {}),
+  };
+}
+
+function resolveActions(metaActions?: GuideActions, stepActions?: GuideActions): GuideActions {
+  return {
+    ...(metaActions ?? {}),
+    ...(stepActions ?? {}),
+  };
+}
+
+function isUiToggleEnabled(value: boolean | undefined): boolean {
+  return value ?? true;
+}
+
+function resolvePrimaryAction(
+  preferred: GuidePrimaryAction | undefined,
+  actions: TooltipActionButton[]
+): GuidePrimaryAction | null {
+  const enabledActions = actions.filter((action) => !action.disabled).map((action) => action.key);
+  if (preferred && enabledActions.includes(preferred)) {
+    return preferred;
+  }
+  if (enabledActions.includes("next")) {
+    return "next";
+  }
+  return null;
+}
+
 function resolveTooltipTemplate(
   step: GuideStep | undefined,
   guide: GuideDefinition
@@ -327,6 +373,14 @@ function buildTooltipStyleVars(theme: GuideTheme): TooltipStyleVars {
   if (theme.stepPillTextColor) vars["--msgt-pill-step-text"] = theme.stepPillTextColor;
   if (theme.kindPillBackgroundColor) vars["--msgt-pill-kind-bg"] = theme.kindPillBackgroundColor;
   if (theme.kindPillTextColor) vars["--msgt-pill-kind-text"] = theme.kindPillTextColor;
+  if (typeof theme.pillFontSize === "number") {
+    vars["--msgt-pill-font-size"] = `${theme.pillFontSize}px`;
+  }
+  if (typeof theme.pillFontWeight === "number") {
+    vars["--msgt-pill-font-weight"] = `${theme.pillFontWeight}`;
+  }
+  if (theme.pillLetterSpacing) vars["--msgt-pill-letter-spacing"] = theme.pillLetterSpacing;
+  if (theme.pillTextTransform) vars["--msgt-pill-text-transform"] = theme.pillTextTransform;
   if (theme.primaryButtonBackgroundColor) {
     vars["--msgt-btn-primary-bg"] = theme.primaryButtonBackgroundColor;
   }
@@ -350,6 +404,32 @@ function buildTooltipStyleVars(theme: GuideTheme): TooltipStyleVars {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+function snapToDevicePixelStart(value: number): number {
+  if (typeof window === "undefined") return value;
+  const dpr = window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
+  return Math.floor(value * dpr) / dpr;
+}
+
+function snapToDevicePixelEnd(value: number): number {
+  if (typeof window === "undefined") return value;
+  const dpr = window.devicePixelRatio > 0 ? window.devicePixelRatio : 1;
+  return Math.ceil(value * dpr) / dpr;
+}
+
+function expandHighlightRect(rect: TargetRect): TargetRect {
+  const left = snapToDevicePixelStart(Math.max(0, rect.left - HIGHLIGHT_OUTER_OFFSET_PX));
+  const top = snapToDevicePixelStart(Math.max(0, rect.top - HIGHLIGHT_OUTER_OFFSET_PX));
+  const right = snapToDevicePixelEnd(rect.left + rect.width + HIGHLIGHT_OUTER_OFFSET_PX);
+  const bottom = snapToDevicePixelEnd(rect.top + rect.height + HIGHLIGHT_OUTER_OFFSET_PX);
+
+  return {
+    left,
+    top,
+    width: Math.max(0, right - left),
+    height: Math.max(0, bottom - top),
+  };
 }
 
 function resolveAdvanceMode(step: GuideStep): ResolvedAdvanceMode {
@@ -538,6 +618,14 @@ export function SpotlightGuideOverlay({
   const resolvedTheme = useMemo(
     () => resolveTheme(guide.meta.theme, currentStep?.theme),
     [guide.meta.theme, currentStep?.theme]
+  );
+  const resolvedPills = useMemo(
+    () => resolvePills(guide.meta.pills, currentStep?.pills),
+    [guide.meta.pills, currentStep?.pills]
+  );
+  const resolvedActions = useMemo(
+    () => resolveActions(guide.meta.actions, currentStep?.actions),
+    [guide.meta.actions, currentStep?.actions]
   );
   const tooltipTemplate = useMemo(
     () => resolveTooltipTemplate(currentStep, guide),
@@ -955,6 +1043,56 @@ export function SpotlightGuideOverlay({
   }
 
   const canSkip = Boolean(currentStep && isStepSkippable(currentStep));
+  const showStepProgressPill = Boolean(currentStep && isUiToggleEnabled(resolvedPills.showStepProgress));
+  const showKindPill = Boolean(currentStep && isUiToggleEnabled(resolvedPills.showKind));
+  const showCloseButton = Boolean(currentStep && isUiToggleEnabled(resolvedActions.showClose));
+  const showBackButton = Boolean(currentStep && isUiToggleEnabled(resolvedActions.showBack));
+  const showNextButton = Boolean(
+    currentStep && mode === "none" && isUiToggleEnabled(resolvedActions.showNext)
+  );
+  const showSkipButton = Boolean(
+    currentStep && canSkip && isUiToggleEnabled(resolvedActions.showSkip)
+  );
+  const actionButtons: TooltipActionButton[] = [];
+  if (showBackButton) {
+    actionButtons.push({
+      key: "back",
+      label: resolvedTexts.backButtonLabel,
+      disabled: stepIndex === 0,
+      onClick: () => {
+        setHint("");
+        setStepIndex((prev) => Math.max(0, prev - 1));
+      },
+    });
+  }
+  if (showSkipButton) {
+    actionButtons.push({
+      key: "skip",
+      label: resolvedTexts.skipButtonLabel,
+      onClick: () => {
+        setHint("");
+        setStepIndex((prev) => Math.min(prev + 1, steps.length));
+      },
+    });
+  }
+  if (showNextButton) {
+    actionButtons.push({
+      key: "next",
+      label: resolvedTexts.nextButtonLabel,
+      onClick: attemptAdvance,
+    });
+  }
+  const primaryAction = resolvePrimaryAction(resolvedActions.primaryAction, actionButtons);
+  const orderedActionButtons =
+    primaryAction === null
+      ? actionButtons
+      : [
+          ...actionButtons.filter((action) => action.key !== primaryAction),
+          ...actionButtons.filter((action) => action.key === primaryAction),
+        ];
+  const hasActionButtons = actionButtons.length > 0;
+  const hasVisiblePills = showStepProgressPill || showKindPill;
+  const showTooltipTop = Boolean(currentStep && (hasVisiblePills || showCloseButton || draggable));
   const autoAdvanceEnabled = Boolean(
     currentStep &&
       typeof currentStep.autoAdvanceMs === "number" &&
@@ -980,12 +1118,7 @@ export function SpotlightGuideOverlay({
     highlightAnimation === "dash" || highlightAnimation === "color-dash";
   const animateColor =
     highlightAnimation === "color" || highlightAnimation === "color-dash";
-  const highlightRects = targetRects.map((rect) => ({
-    left: Math.max(0, rect.left - HIGHLIGHT_OUTER_OFFSET_PX),
-    top: Math.max(0, rect.top - HIGHLIGHT_OUTER_OFFSET_PX),
-    width: rect.width + HIGHLIGHT_OUTER_OFFSET_PX * 2,
-    height: rect.height + HIGHLIGHT_OUTER_OFFSET_PX * 2,
-  }));
+  const highlightRects = targetRects.map(expandHighlightRect);
   const highlightStrokeInset = HIGHLIGHT_STROKE_WIDTH_PX / 2;
   const highlightStrokeRadius = Math.max(0, HIGHLIGHT_RADIUS_PX - highlightStrokeInset);
   const highlightStrokeClassName = [
@@ -1114,111 +1247,109 @@ export function SpotlightGuideOverlay({
           top: tooltipPos.top,
           ...tooltipThemeStyle,
         }}
-      >
-        {!finished && currentStep ? (
-          <>
-            <div
-              className="msgt-tooltip-top"
-              style={{ cursor: draggable ? (dragOffset ? "grabbing" : "grab") : "default" }}
-              onPointerDown={(event) => {
-                if (!draggable) return;
-                event.preventDefault();
-                setDragOffset({
-                  startX: event.clientX,
-                  startY: event.clientY,
-                  startLeft: tooltipPos.left,
-                  startTop: tooltipPos.top,
-                });
-              }}
-            >
-              <span className="msgt-pill msgt-pill-step">{stepProgressText}</span>
-              <span className="msgt-pill msgt-pill-kind">{currentStep.kind}</span>
-            </div>
-
-            <h3 className="msgt-title">{currentStep.title}</h3>
-            <p className="msgt-description">{currentStep.description}</p>
-
-            {targetMissing ? (
-              <p className="msgt-hint msgt-hint-warning">{targetMissingMessage}</p>
-            ) : (
-              <p className="msgt-hint">
-                {showHighlight
-                  ? resolvedTexts.followHighlightMessage
-                  : resolvedTexts.followTargetMessage}
-              </p>
-            )}
-
-            {hint && <p className="msgt-hint msgt-hint-warning">{hint}</p>}
-            {showAutoAdvanceProgress && (
-              <div className="msgt-timer-root">
-                <p className="msgt-hint">{autoAdvanceMessage}</p>
+        >
+          {!finished && currentStep ? (
+            <>
+              {showTooltipTop && (
                 <div
-                  className="msgt-timer-track"
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={autoAdvanceProgressPercent}
-                >
-                  <span
-                    className="msgt-timer-fill"
-                    style={{ width: `${autoAdvanceProgressPercent}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="msgt-tooltip-actions">
-              <button type="button" className="msgt-btn msgt-btn-ghost" onClick={onClose}>
-                {resolvedTexts.closeButtonLabel}
-              </button>
-
-              <div className="msgt-tooltip-right-actions">
-                {mode === "none" && (
-                  <button
-                    type="button"
-                    className="msgt-btn msgt-btn-primary"
-                    onClick={attemptAdvance}
-                  >
-                    {resolvedTexts.nextButtonLabel}
-                  </button>
-                )}
-
-                <button
-                  type="button"
-                  className="msgt-btn msgt-btn-ghost"
-                  disabled={stepIndex === 0}
-                  onClick={() => {
-                    setHint("");
-                    setStepIndex((prev) => Math.max(0, prev - 1));
+                  className={`msgt-tooltip-top${hasVisiblePills ? "" : " msgt-tooltip-top--minimal"}`}
+                  style={{ cursor: draggable ? (dragOffset ? "grabbing" : "grab") : "default" }}
+                  onPointerDown={(event) => {
+                    if (!draggable) return;
+                    event.preventDefault();
+                    setDragOffset({
+                      startX: event.clientX,
+                      startY: event.clientY,
+                      startLeft: tooltipPos.left,
+                      startTop: tooltipPos.top,
+                    });
                   }}
                 >
-                  {resolvedTexts.backButtonLabel}
-                </button>
+                  <div className="msgt-tooltip-top-left">
+                    {showStepProgressPill && (
+                      <span className="msgt-pill msgt-pill-step">{stepProgressText}</span>
+                    )}
+                    {showKindPill && (
+                      <span className="msgt-pill msgt-pill-kind">{currentStep.kind}</span>
+                    )}
+                  </div>
+                  {showCloseButton && (
+                    <button
+                      type="button"
+                      className="msgt-tooltip-dismiss"
+                      aria-label={resolvedTexts.closeButtonLabel}
+                      title={resolvedTexts.closeButtonLabel}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={onClose}
+                    >
+                      x
+                    </button>
+                  )}
+                </div>
+              )}
 
-                {canSkip && (
-                  <button
-                    type="button"
-                    className="msgt-btn msgt-btn-primary"
-                    onClick={() => setStepIndex((prev) => Math.min(prev + 1, steps.length))}
+              <h3 className="msgt-title">{currentStep.title}</h3>
+              <p className="msgt-description">{currentStep.description}</p>
+
+              {targetMissing ? (
+                <p className="msgt-hint msgt-hint-warning">{targetMissingMessage}</p>
+              ) : (
+                <p className="msgt-hint">
+                  {showHighlight
+                    ? resolvedTexts.followHighlightMessage
+                    : resolvedTexts.followTargetMessage}
+                </p>
+              )}
+
+              {hint && <p className="msgt-hint msgt-hint-warning">{hint}</p>}
+              {showAutoAdvanceProgress && (
+                <div className="msgt-timer-root">
+                  <p className="msgt-hint">{autoAdvanceMessage}</p>
+                  <div
+                    className="msgt-timer-track"
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-valuenow={autoAdvanceProgressPercent}
                   >
-                    {resolvedTexts.skipButtonLabel}
-                  </button>
-                )}
+                    <span
+                      className="msgt-timer-fill"
+                      style={{ width: `${autoAdvanceProgressPercent}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {hasActionButtons && (
+                <div className="msgt-tooltip-actions">
+                  {orderedActionButtons.map((action) => (
+                    <button
+                      key={action.key}
+                      type="button"
+                      className={`msgt-btn ${
+                        primaryAction === action.key ? "msgt-btn-primary" : "msgt-btn-ghost"
+                      }`}
+                      disabled={action.disabled}
+                      onClick={action.onClick}
+                    >
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <h3 className="msgt-title">{completedTitle}</h3>
+              <p className="msgt-description">{resolvedTexts.completedDescription}</p>
+              <div className="msgt-tooltip-actions">
+                <button type="button" className="msgt-btn msgt-btn-primary" onClick={onClose}>
+                  {resolvedTexts.finishButtonLabel}
+                </button>
               </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <h3 className="msgt-title">{completedTitle}</h3>
-            <p className="msgt-description">{resolvedTexts.completedDescription}</p>
-            <div className="msgt-tooltip-actions">
-              <button type="button" className="msgt-btn msgt-btn-primary" onClick={onClose}>
-                {resolvedTexts.finishButtonLabel}
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </div>
     </div>
   );
 

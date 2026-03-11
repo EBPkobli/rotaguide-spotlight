@@ -1,6 +1,6 @@
 {
   "name": "rotaguide-spotlight",
-  "version": "0.1.2",
+  "version": "1.1.0",
   "description": "RotaGuide Spotlight: markdown, JSON, and YAML-driven spotlight walkthroughs for React apps",
   "license": "MIT",
   "type": "module",
@@ -48,7 +48,9 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm run build"
+    "check": "npm run typecheck && npm run build",
+    "example:dev": "npm run dev --prefix examples/simple-react",
+    "example:build": "npm run build --prefix examples/simple-react"
   },
   "peerDependencies": {
     "react": ">=18",

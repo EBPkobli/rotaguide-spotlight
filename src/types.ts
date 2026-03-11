@@ -17,6 +17,13 @@ export const GUIDE_HIGHLIGHT_ANIMATIONS = [
   "dash",
   "color-dash",
 ] as const;
+export const GUIDE_PRIMARY_ACTIONS = ["back", "next", "skip"] as const;
+export const GUIDE_TEXT_TRANSFORMS = [
+  "none",
+  "uppercase",
+  "lowercase",
+  "capitalize",
+] as const;
 export const GUIDE_TOOLTIP_PLACEMENTS = [
   "auto",
   "top",
@@ -41,8 +48,23 @@ export type GuideAdvanceMode = (typeof GUIDE_ADVANCE_MODES)[number];
 export type GuideSourceFormat = (typeof GUIDE_SOURCE_FORMATS)[number];
 export type GuideHighlightStyle = (typeof GUIDE_HIGHLIGHT_STYLES)[number];
 export type GuideHighlightAnimation = (typeof GUIDE_HIGHLIGHT_ANIMATIONS)[number];
+export type GuidePrimaryAction = (typeof GUIDE_PRIMARY_ACTIONS)[number];
+export type GuideTextTransform = (typeof GUIDE_TEXT_TRANSFORMS)[number];
 export type GuideTooltipPlacement = (typeof GUIDE_TOOLTIP_PLACEMENTS)[number];
 export type GuideTooltipTemplate = (typeof GUIDE_TOOLTIP_TEMPLATES)[number];
+
+export interface GuidePills {
+  showStepProgress?: boolean;
+  showKind?: boolean;
+}
+
+export interface GuideActions {
+  showClose?: boolean;
+  showBack?: boolean;
+  showNext?: boolean;
+  showSkip?: boolean;
+  primaryAction?: GuidePrimaryAction;
+}
 
 export interface GuideI18n {
   locale?: string;
@@ -79,6 +101,10 @@ export interface GuideTheme {
   stepPillTextColor?: string;
   kindPillBackgroundColor?: string;
   kindPillTextColor?: string;
+  pillFontSize?: number;
+  pillFontWeight?: number;
+  pillLetterSpacing?: string;
+  pillTextTransform?: GuideTextTransform;
   primaryButtonBackgroundColor?: string;
   primaryButtonTextColor?: string;
   primaryButtonBorderColor?: string;
@@ -106,6 +132,8 @@ export interface GuideMeta {
   highlightAnimation?: GuideHighlightAnimation;
   tooltipTemplate?: GuideTooltipTemplate;
   i18n?: GuideI18n;
+  pills?: GuidePills;
+  actions?: GuideActions;
   theme?: GuideTheme;
 }
 
@@ -132,6 +160,8 @@ export interface GuideStep {
   mustClickTarget?: boolean;
   mustEnterValue?: boolean;
   i18n?: GuideI18n;
+  pills?: GuidePills;
+  actions?: GuideActions;
   theme?: GuideTheme;
 }
 

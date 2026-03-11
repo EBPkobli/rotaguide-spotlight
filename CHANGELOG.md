@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.0 - 2026-03-11
+
+### Added
+- Optional `pills` configuration at guide and step level to hide the progress pill, hide the kind pill, or mix them per step.
+- Optional `actions` configuration at guide and step level to hide close/back/next/skip controls and choose which footer action is primary.
+- New pill theme tokens: `pillFontSize`, `pillFontWeight`, `pillLetterSpacing`, and `pillTextTransform`.
+- Example app demos for 1.1.0 UI controls, including hidden pills, softer kind tags, and primary action overrides.
+
+### Updated
+- Active-step dismiss is now rendered as a compact header control instead of competing with footer actions.
+- Footer actions now emphasize a single primary action by default, with `Next` preferred for manual steps.
+- Example app dependency flow is prepared for manual version pinning instead of automatic local workspace updates.
+
 ## 0.1.2 - 2026-03-08
 
 ### Added

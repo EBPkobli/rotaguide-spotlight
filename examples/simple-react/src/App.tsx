@@ -320,6 +320,113 @@ skippable: true
 }
 
 /* ─── Pre-built themes ─── */
+function buildUiControlsGuide() {
+  return `---
+id: ui-controls-demo
+title: UI Controls Demo
+showHighlight: true
+tooltipTemplate: clean-white
+---
+
+## Step: Hide Header Pills
+\`\`\`yaml
+id: ui-pills-hidden
+target: ui-controls-target
+kind: List
+title: "Hide tags when the title should lead"
+description: "Use pills.showStepProgress and pills.showKind to remove extra header labels and keep the step title as the main focal point."
+advanceOn: none
+pills:
+  showStepProgress: false
+  showKind: false
+actions:
+  showClose: false
+  showBack: false
+  showSkip: false
+  showNext: true
+\`\`\`
+
+## Step: Softer Kind Pill
+\`\`\`yaml
+id: ui-kind-soft
+target: ui-controls-target
+kind: List
+title: "Keep the kind tag subtle"
+description: "The pill stays visible, but smaller typography and calmer colors keep it below the title in the visual hierarchy."
+advanceOn: none
+pills:
+  showStepProgress: false
+  showKind: true
+theme:
+  kindPillBackgroundColor: "#eef2ff"
+  kindPillTextColor: "#475569"
+  pillFontSize: 10
+  pillFontWeight: 500
+  pillLetterSpacing: "0.05em"
+  pillTextTransform: uppercase
+actions:
+  showClose: false
+  showBack: true
+  showSkip: true
+  showNext: true
+  primaryAction: next
+\`\`\`
+
+## Step: Simplify Actions
+\`\`\`yaml
+id: ui-actions-simple
+target: ui-actions-target
+kind: Action
+title: "Make the primary action obvious"
+description: "Dismiss and Skip are hidden here, so the manual Next button becomes the only visual priority."
+advanceOn: none
+pills:
+  showStepProgress: true
+  showKind: false
+actions:
+  showClose: false
+  showBack: true
+  showSkip: false
+  showNext: true
+  primaryAction: next
+\`\`\`
+`;
+}
+
+function buildPrimaryActionGuide() {
+  return `---
+id: ui-primary-action
+title: Primary Action Override
+showHighlight: true
+tooltipTemplate: contrast
+---
+
+## Step: Skip as the Primary Action
+\`\`\`yaml
+id: ui-primary-skip
+target: ui-actions-target
+kind: Action
+title: "Primary action can be reassigned"
+description: "Set actions.primaryAction to skip when bypassing the step should be the most prominent choice."
+advanceOn: none
+pills:
+  showStepProgress: false
+  showKind: true
+actions:
+  showClose: false
+  showBack: true
+  showSkip: true
+  showNext: true
+  primaryAction: skip
+theme:
+  primaryButtonBackgroundColor: "#ea580c"
+  primaryButtonBorderColor: "#ea580c"
+  primaryButtonHoverBackgroundColor: "#c2410c"
+  primaryButtonHoverBorderColor: "#c2410c"
+\`\`\`
+`;
+}
+
 const THEME_PRESETS = {
   ocean: {
     fontFamily: "'Georgia', serif",
@@ -379,6 +486,7 @@ const SECTIONS = [
   { id: "placement", label: "Placement" },
   { id: "highlights", label: "Highlights" },
   { id: "behaviors", label: "Behaviors" },
+  { id: "ui-controls", label: "UI Controls" },
   { id: "i18n-theme", label: "i18n & Theme" },
   { id: "validation", label: "Validation" },
   { id: "events", label: "Events" },
@@ -1142,6 +1250,47 @@ export default function App() {
         </section>
 
         {/* ══════════ I18N & THEME ══════════ */}
+        <section id="ui-controls" className="section">
+          <div className="section-head">
+            <h2>UI Controls</h2>
+            <span className="badge badge--orange">New in 1.1.0</span>
+          </div>
+
+          <div className="grid-2">
+            <div className="card" {...guideTarget("ui-controls-target")}>
+              <h3>Optional Header Pills</h3>
+              <p>
+                Hide the progress and kind pills entirely, or keep them visible with subtler
+                typography and calmer colors.
+              </p>
+              <div className="form-row mt-12">
+                <MarkdownGuideButton
+                  content={buildUiControlsGuide()}
+                  format="markdown"
+                  label="Run UI Controls Tour"
+                  onGuideStart={() => pushEvent("UI controls -> tour")}
+                />
+              </div>
+            </div>
+
+            <div className="card" {...guideTarget("ui-actions-target")}>
+              <h3>Action Button Layout</h3>
+              <p>
+                Simplify the footer by hiding close or skip, or reassign the primary emphasis to a
+                different action.
+              </p>
+              <div className="form-row mt-12">
+                <MarkdownGuideButton
+                  content={buildPrimaryActionGuide()}
+                  format="markdown"
+                  label="Preview Primary Skip"
+                  onGuideStart={() => pushEvent("UI controls -> primary skip")}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="i18n-theme" className="section">
           <div className="section-head">
             <h2>i18n & Theme</h2>

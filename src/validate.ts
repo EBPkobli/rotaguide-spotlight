@@ -3,6 +3,8 @@ import {
   GUIDE_HIGHLIGHT_ANIMATIONS,
   GUIDE_HIGHLIGHT_STYLES,
   GUIDE_KINDS,
+  GUIDE_PRIMARY_ACTIONS,
+  GUIDE_TEXT_TRANSFORMS,
   GUIDE_TOOLTIP_PLACEMENTS,
   GUIDE_TOOLTIP_TEMPLATES,
   type GuideDefinition,
@@ -63,6 +65,8 @@ function normalizeStep(step: GuideStep): GuideStep {
     mustClickTarget: step.mustClickTarget,
     mustEnterValue: step.mustEnterValue,
     i18n: step.i18n,
+    pills: step.pills,
+    actions: step.actions,
     theme: step.theme,
   };
 }
@@ -145,6 +149,50 @@ export function validateGuideDefinition(
       code: "GUIDE_META_INVALID_FIELD",
       message: "Guide meta.theme.tooltipBorderRadius is invalid.",
       hint: "Use a non-negative number (px).",
+    });
+  }
+
+  if (
+    typeof guide.meta.theme?.pillFontSize === "number" &&
+    (!Number.isFinite(guide.meta.theme.pillFontSize) || guide.meta.theme.pillFontSize < 0)
+  ) {
+    issues.push({
+      code: "GUIDE_META_INVALID_FIELD",
+      message: "Guide meta.theme.pillFontSize is invalid.",
+      hint: "Use a non-negative number (px).",
+    });
+  }
+
+  if (
+    typeof guide.meta.theme?.pillFontWeight === "number" &&
+    (!Number.isFinite(guide.meta.theme.pillFontWeight) || guide.meta.theme.pillFontWeight <= 0)
+  ) {
+    issues.push({
+      code: "GUIDE_META_INVALID_FIELD",
+      message: "Guide meta.theme.pillFontWeight is invalid.",
+      hint: "Use a positive number.",
+    });
+  }
+
+  if (
+    typeof guide.meta.theme?.pillTextTransform === "string" &&
+    !GUIDE_TEXT_TRANSFORMS.includes(guide.meta.theme.pillTextTransform)
+  ) {
+    issues.push({
+      code: "GUIDE_META_INVALID_FIELD",
+      message: `Guide meta.theme.pillTextTransform is invalid: ${guide.meta.theme.pillTextTransform}.`,
+      hint: `Allowed: ${GUIDE_TEXT_TRANSFORMS.join(", ")}`,
+    });
+  }
+
+  if (
+    typeof guide.meta.actions?.primaryAction === "string" &&
+    !GUIDE_PRIMARY_ACTIONS.includes(guide.meta.actions.primaryAction)
+  ) {
+    issues.push({
+      code: "GUIDE_META_INVALID_FIELD",
+      message: `Guide meta.actions.primaryAction is invalid: ${guide.meta.actions.primaryAction}.`,
+      hint: `Allowed: ${GUIDE_PRIMARY_ACTIONS.join(", ")}`,
     });
   }
 
@@ -323,6 +371,54 @@ export function validateGuideDefinition(
         line,
         message: `Step ${step.id} has invalid theme.tooltipBorderRadius.`,
         hint: "Use a non-negative number (px).",
+      });
+    }
+
+    if (
+      typeof step.theme?.pillFontSize === "number" &&
+      (!Number.isFinite(step.theme.pillFontSize) || step.theme.pillFontSize < 0)
+    ) {
+      issues.push({
+        code: "GUIDE_STEP_INVALID_FIELD",
+        line,
+        message: `Step ${step.id} has invalid theme.pillFontSize.`,
+        hint: "Use a non-negative number (px).",
+      });
+    }
+
+    if (
+      typeof step.theme?.pillFontWeight === "number" &&
+      (!Number.isFinite(step.theme.pillFontWeight) || step.theme.pillFontWeight <= 0)
+    ) {
+      issues.push({
+        code: "GUIDE_STEP_INVALID_FIELD",
+        line,
+        message: `Step ${step.id} has invalid theme.pillFontWeight.`,
+        hint: "Use a positive number.",
+      });
+    }
+
+    if (
+      typeof step.theme?.pillTextTransform === "string" &&
+      !GUIDE_TEXT_TRANSFORMS.includes(step.theme.pillTextTransform)
+    ) {
+      issues.push({
+        code: "GUIDE_STEP_INVALID_FIELD",
+        line,
+        message: `Step ${step.id} has invalid theme.pillTextTransform: ${step.theme.pillTextTransform}.`,
+        hint: `Allowed: ${GUIDE_TEXT_TRANSFORMS.join(", ")}`,
+      });
+    }
+
+    if (
+      typeof step.actions?.primaryAction === "string" &&
+      !GUIDE_PRIMARY_ACTIONS.includes(step.actions.primaryAction)
+    ) {
+      issues.push({
+        code: "GUIDE_STEP_INVALID_FIELD",
+        line,
+        message: `Step ${step.id} has invalid actions.primaryAction: ${step.actions.primaryAction}.`,
+        hint: `Allowed: ${GUIDE_PRIMARY_ACTIONS.join(", ")}`,
       });
     }
 
