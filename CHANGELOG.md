@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.2 - 2026-03-12
+
+### Fixed
+- Republishes the tooltip layout and `Next` button fixes that were intended for `1.1.1` but were not present in the published npm tarball.
+- Headerless tooltips keep the title aligned higher, without leaving an empty spacer row.
+- `Next` remains visible when footer actions enable it, including the editor and example runtime previews.
+
 ## 1.1.1 - 2026-03-12
 
 ### Fixed
