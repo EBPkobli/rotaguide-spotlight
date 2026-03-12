@@ -393,6 +393,36 @@ actions:
 `;
 }
 
+function buildMinimalChromeGuide() {
+  return `---
+id: ui-minimal-chrome
+title: Minimal Chrome Demo
+showHighlight: true
+tooltipTemplate: clean-white
+---
+
+## Step: Clean Tooltip
+\`\`\`yaml
+id: ui-clean-tooltip
+target: ui-controls-target
+kind: Action
+title: "No pills, no footer actions"
+description: "This step hides the top pills and every footer action so teams can see the cleanest tooltip layout. Click the highlighted card to finish."
+advanceOn: click
+mustClickTarget: true
+skippable: false
+pills:
+  showStepProgress: false
+  showKind: false
+actions:
+  showClose: false
+  showBack: false
+  showSkip: false
+  showNext: false
+\`\`\`
+`;
+}
+
 function buildPrimaryActionGuide() {
   return `---
 id: ui-primary-action
@@ -1264,6 +1294,17 @@ export default function App() {
                 typography and calmer colors.
               </p>
               <div className="form-row mt-12">
+                <MarkdownGuideButton
+                  content={buildMinimalChromeGuide()}
+                  format="markdown"
+                  label="Preview Clean Tooltip"
+                  renderButton={({ onClick, label, disabled }) => (
+                    <button type="button" className="btn-ghost" onClick={onClick} disabled={disabled}>
+                      {label}
+                    </button>
+                  )}
+                  onGuideStart={() => pushEvent("UI controls -> clean tooltip")}
+                />
                 <MarkdownGuideButton
                   content={buildUiControlsGuide()}
                   format="markdown"
