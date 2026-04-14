@@ -104,10 +104,10 @@ body {
 .main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 24px 64px;
+  padding: 32px 24px 80px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 52px;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -170,10 +170,10 @@ body {
 }
 
 .hero-stats {
-  margin-top: 24px;
+  margin-top: 28px;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
 }
 
 .stat {
@@ -266,13 +266,13 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .section-head h2 {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .badge {
@@ -296,16 +296,20 @@ body {
 .badge--gray   { background: #f3f4f6; color: #4b5563; border: 1px solid rgba(107,114,128,0.2); }
 
 .sub-section {
-  margin-top: 20px;
+  margin-top: 32px;
 }
 
 .sub-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin-bottom: 12px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -315,30 +319,30 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 28px;
   box-shadow: var(--shadow-sm);
 }
 
 .card--compact {
-  padding: 16px;
+  padding: 24px;
 }
 
 .card--feature {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
 }
 
 .card--feature h4 {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.01em;
 }
 
 .card--feature p {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .card-head {
@@ -367,7 +371,7 @@ body {
 .card-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .card-note {
@@ -392,10 +396,10 @@ body {
 /* ═══════════════════════════════════════════════════
    GRIDS
    ═══════════════════════════════════════════════════ */
-.grid-2 { display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
-.grid-3 { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
-.grid-4 { display: grid; gap: 12px; grid-template-columns: repeat(4, 1fr); }
-.grid-5 { display: grid; gap: 12px; grid-template-columns: repeat(5, 1fr); }
+.grid-2 { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
+.grid-3 { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
+.grid-4 { display: grid; gap: 16px; grid-template-columns: repeat(4, 1fr); }
+.grid-5 { display: grid; gap: 16px; grid-template-columns: repeat(5, 1fr); }
 
 /* ═══════════════════════════════════════════════════
    BUTTONS
@@ -405,7 +409,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 18px;
+  padding: 12px 22px;
   background: linear-gradient(180deg, #f06a22, var(--accent));
   border: 1px solid var(--accent);
   border-radius: var(--radius);
@@ -435,7 +439,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 18px;
+  padding: 12px 22px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -462,7 +466,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 18px;
+  padding: 12px 22px;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -489,7 +493,7 @@ body {
    ═══════════════════════════════════════════════════ */
 .form-grid {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   grid-template-columns: 1fr 1fr;
 }
 
@@ -1002,6 +1006,42 @@ body {
    ═══════════════════════════════════════════════════ */
 .center-text { text-align: center; }
 .mt-12 { margin-top: 12px; }
+
+/* ═══════════════════════════════════════════════════
+   NEW TAG & SECTION DESCRIPTION
+   ═══════════════════════════════════════════════════ */
+.new-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.12);
+  line-height: 1;
+}
+
+.section-description {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 12px;
+  max-width: 72ch;
+}
+
+.section-description code {
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
 
 /* ═══════════════════════════════════════════════════
    RESPONSIVE

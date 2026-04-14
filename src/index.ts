@@ -19,6 +19,37 @@ export {
 export { GuideParseError, formatGuideIssues } from "./errors";
 export { guideTarget } from "./helpers";
 
+// --- Extension system ---
+export {
+  defineExtension,
+  composeExtensions,
+} from "./extensions";
+export type {
+  SpotlightExtension,
+  GuideLifecycleEvent,
+  StepLifecycleEvent,
+  GuideCompleteEvent,
+  GuideCloseEvent,
+  TooltipRenderContext,
+  CompletedRenderContext,
+} from "./extensions";
+
+// --- Spotlight instance & presets ---
+export {
+  createSpotlight,
+  defineGuide,
+  definePreset,
+} from "./spotlight";
+export type {
+  SpotlightConfig,
+  SpotlightInstance,
+  SpotlightPreset,
+} from "./spotlight";
+
+// --- React context ---
+export { SpotlightProvider, useSpotlightInstance } from "./SpotlightContext";
+export type { SpotlightProviderProps } from "./SpotlightContext";
+
 export {
   GUIDE_KINDS,
   GUIDE_ADVANCE_MODES,

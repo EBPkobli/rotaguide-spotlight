@@ -1,8 +1,11 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { formatGuideIssues } from "./errors";
 import { parseGuideContentSafe } from "./parser";
 import { SpotlightGuideOverlay } from "./SpotlightGuideOverlay";
 import type { GuideDefinition, GuideIssue, GuideSourceFormat } from "./types";
+import type { SpotlightExtension } from "./extensions";
+import type { SpotlightInstance } from "./spotlight";
+import { useSpotlightInstance } from "./SpotlightContext";
 
 export interface MarkdownGuideButtonProps {
   markdown?: string;
@@ -21,6 +24,12 @@ export interface MarkdownGuideButtonProps {
   onGuideStart?: (guide: GuideDefinition) => void;
   onGuideClose?: () => void;
   onParseError?: (issues: GuideIssue[]) => void;
+  /** Called when canStartGuide returns false. */
+  onAccessDenied?: (guide: GuideDefinition) => void;
+  /** Spotlight instance for extensions/presets. */
+  instance?: SpotlightInstance;
+  /** Inline extension (convenience shortcut). */
+  extension?: SpotlightExtension;
 }
 
 export function MarkdownGuideButton({
@@ -36,8 +45,17 @@ export function MarkdownGuideButton({
   onGuideStart,
   onGuideClose,
   onParseError,
+  onAccessDenied,
+  instance: instanceProp,
+  extension: extensionProp,
 }: MarkdownGuideButtonProps) {
+  const contextInstance = useSpotlightInstance();
+  const instance = instanceProp ?? contextInstance;
+  const ext: SpotlightExtension | undefined =
+    extensionProp ?? instance?.extension;
+
   const [open, setOpen] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [errorIssues, setErrorIssues] = useState<GuideIssue[] | null>(null);
 
   const guideContent = content ?? markdown ?? "";
@@ -50,8 +68,8 @@ export function MarkdownGuideButton({
   const buttonLabel =
     label ?? parsedGuide?.meta.buttonLabel ?? "Start Guide";
 
-  const runGuide = () => {
-    if (disabled) return;
+  const runGuide = useCallback(async () => {
+    if (disabled || checking) return;
 
     if (!parsedGuide) {
       setErrorIssues(parseResult.issues);
@@ -59,10 +77,31 @@ export function MarkdownGuideButton({
       return;
     }
 
+    // Run canStartGuide check if extension provides it
+    if (ext?.canStartGuide) {
+      setChecking(true);
+      try {
+        const allowed = await ext.canStartGuide({
+          guideId: parsedGuide.meta.id,
+          guide: parsedGuide,
+        });
+        if (!allowed) {
+          onAccessDenied?.(parsedGuide);
+          setChecking(false);
+          return;
+        }
+      } catch {
+        onAccessDenied?.(parsedGuide);
+        setChecking(false);
+        return;
+      }
+      setChecking(false);
+    }
+
     setErrorIssues(null);
     setOpen(true);
     onGuideStart?.(parsedGuide);
-  };
+  }, [checking, disabled, ext, onAccessDenied, onGuideStart, onParseError, parseResult.issues, parsedGuide]);
 
   const closeGuide = () => {
     setOpen(false);
@@ -76,13 +115,13 @@ export function MarkdownGuideButton({
   return (
     <>
       {renderButton ? (
-        renderButton({ onClick: runGuide, label: buttonLabel, disabled })
+        renderButton({ onClick: runGuide, label: buttonLabel, disabled: disabled || checking })
       ) : (
         <button
           type="button"
           className={`msgt-btn msgt-btn-primary ${className ?? ""}`.trim()}
           style={style}
-          disabled={disabled}
+          disabled={disabled || checking}
           onClick={runGuide}
         >
           {buttonLabel}
@@ -95,6 +134,8 @@ export function MarkdownGuideButton({
           guide={parsedGuide}
           onClose={closeGuide}
           zIndex={overlayZIndex}
+          instance={instance ?? undefined}
+          extension={ext}
         />
       )}
 

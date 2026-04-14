@@ -56,6 +56,8 @@ function normalizeStep(step: GuideStep): GuideStep {
     inputIdleMs: step.inputIdleMs,
     showHighlight: step.showHighlight,
     highlightColor: step.highlightColor,
+    highlightPadding: step.highlightPadding,
+    highlightBorderRadius: step.highlightBorderRadius,
     draggable: step.draggable,
     highlightStyle: step.highlightStyle,
     highlightAnimation: step.highlightAnimation,
@@ -82,6 +84,29 @@ export function validateGuideDefinition(
       code: "GUIDE_META_MISSING_TITLE",
       message: "Guide meta.title is required.",
       hint: "Set meta.title in markdown frontmatter or in json/yaml guide data.",
+    });
+  }
+
+  if (
+    typeof guide.meta.highlightPadding === "number" &&
+    (!Number.isFinite(guide.meta.highlightPadding) || guide.meta.highlightPadding < 0)
+  ) {
+    issues.push({
+      code: "GUIDE_META_INVALID_FIELD",
+      message: "Guide meta.highlightPadding is invalid.",
+      hint: "Use a non-negative number (px).",
+    });
+  }
+
+  if (
+    typeof guide.meta.highlightBorderRadius === "number" &&
+    (!Number.isFinite(guide.meta.highlightBorderRadius) ||
+      guide.meta.highlightBorderRadius < 0)
+  ) {
+    issues.push({
+      code: "GUIDE_META_INVALID_FIELD",
+      message: "Guide meta.highlightBorderRadius is invalid.",
+      hint: "Use a non-negative number (px).",
     });
   }
 
@@ -298,6 +323,31 @@ export function validateGuideDefinition(
         line,
         message: `Step ${step.id} has invalid autoAdvanceMs.`,
         hint: "Use a positive number in milliseconds.",
+      });
+    }
+
+    if (
+      typeof step.highlightPadding === "number" &&
+      (!Number.isFinite(step.highlightPadding) || step.highlightPadding < 0)
+    ) {
+      issues.push({
+        code: "GUIDE_STEP_INVALID_FIELD",
+        line,
+        message: `Step ${step.id} has invalid highlightPadding.`,
+        hint: "Use a non-negative number (px).",
+      });
+    }
+
+    if (
+      typeof step.highlightBorderRadius === "number" &&
+      (!Number.isFinite(step.highlightBorderRadius) ||
+        step.highlightBorderRadius < 0)
+    ) {
+      issues.push({
+        code: "GUIDE_STEP_INVALID_FIELD",
+        line,
+        message: `Step ${step.id} has invalid highlightBorderRadius.`,
+        hint: "Use a non-negative number (px).",
       });
     }
 

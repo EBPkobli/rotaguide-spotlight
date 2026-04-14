@@ -5,12 +5,17 @@ import {
   MarkdownGuideButton,
   MarkdownGuideTrigger,
   SpotlightGuideOverlay,
+  SpotlightProvider,
   guideTarget,
   parseGuideContent,
   parseGuideContentSafe,
   parseGuideMarkdown,
   parseGuideMarkdownSafe,
   formatGuideIssues,
+  createSpotlight,
+  defineExtension,
+  definePreset,
+  defineGuide,
   type GuideTooltipTemplate,
   type GuideIssue,
   type GuideDefinition,
@@ -506,10 +511,87 @@ const THEME_PRESETS = {
   },
 } as const;
 
+/* ─── Extension demos ─── */
+
+// 1) Analytics extension — logs lifecycle events
+const analyticsExtension = defineExtension({
+  name: "analytics",
+  onGuideStart({ guideId }) {
+    console.log(`[analytics] guide_started: ${guideId}`);
+  },
+  onStepChange({ guideId, stepIndex, step }) {
+    console.log(`[analytics] step_viewed: ${guideId} → step ${stepIndex} (${step.id})`);
+  },
+  onGuideComplete({ guideId }) {
+    console.log(`[analytics] guide_completed: ${guideId}`);
+  },
+  onGuideClose({ guideId, stepIndex, reason }) {
+    console.log(`[analytics] guide_closed: ${guideId} at step ${stepIndex} (${reason})`);
+  },
+});
+
+// 1b) Access control extension — simulates async permission check
+let accessAllowed = true; // toggled by a checkbox in the demo
+const accessControlExtension = defineExtension({
+  name: "access-control",
+  async canStartGuide({ guideId }) {
+    // Simulate a 500ms API call
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    console.log(`[access-control] canStartGuide(${guideId}) → ${accessAllowed}`);
+    return accessAllowed;
+  },
+});
+
+// 2) Brand preset — theme + extension bundle
+const brandPreset = definePreset({
+  name: "demo-brand",
+  theme: {
+    primaryButtonBackgroundColor: "#7c3aed",
+    primaryButtonTextColor: "#ffffff",
+    primaryButtonBorderColor: "#7c3aed",
+    primaryButtonHoverBackgroundColor: "#6d28d9",
+    primaryButtonHoverBorderColor: "#6d28d9",
+  },
+  tooltipTemplate: "glass",
+  extensions: [analyticsExtension],
+});
+
+// 3) Create a spotlight instance with the preset
+const spotlight = createSpotlight({ preset: brandPreset });
+
+// 4) Define a guide programmatically
+const extensionDemoGuide = defineGuide({
+  meta: {
+    id: "extension-demo",
+    title: "Extension System Demo",
+    tooltipTemplate: "glass",
+    finishAnimation: true,
+  },
+  steps: [
+    {
+      id: "ext-step-1",
+      target: "ext-demo-target-1",
+      title: "Extensions are active",
+      kind: "Action",
+      description:
+        "This guide uses a SpotlightProvider with analytics and branding extensions. Check the browser console for lifecycle events.",
+    },
+    {
+      id: "ext-step-2",
+      target: "ext-demo-target-2",
+      title: "Themed by preset",
+      kind: "Action",
+      description:
+        "The purple primary button comes from the brand preset theme — no per-guide config needed.",
+    },
+  ],
+});
+
 /* ─── Nav sections ─── */
 const SECTIONS = [
   { id: "hero", label: "Home" },
   { id: "workspace", label: "Workspace" },
+  { id: "extensions", label: "Extensions" },
   { id: "components", label: "Components" },
   { id: "formats", label: "Formats" },
   { id: "templates", label: "Templates" },
@@ -536,6 +618,8 @@ export default function App() {
 
   /* ── UI state ── */
   const [eventLog, setEventLog] = useState<string[]>([]);
+  const [extensionDemoOpen, setExtensionDemoOpen] = useState(false);
+  const [accessToggle, setAccessToggle] = useState(true);
   const [parseIssues, setParseIssues] = useState<GuideIssue[]>([]);
   const [throwResult, setThrowResult] = useState("");
   const [throwContentResult, setThrowContentResult] = useState("");
@@ -643,10 +727,10 @@ export default function App() {
       <main className="main">
         {/* ══════════ HERO ══════════ */}
         <section id="hero" className="hero" {...guideTarget("guide-start-panel")}>
-          <div className="hero-badge">Feature Showcase</div>
+          <div className="hero-badge">v1.2.0 — Feature Showcase</div>
           <h1 className="hero-title">RotaGuide Spotlight</h1>
           <p className="hero-sub">
-            The complete interactive product tour library for React. Explore every feature below — click any button to see it live.
+            The complete interactive product tour library for React — now with an extension system, presets, access control, and finish animations. Explore every feature below.
           </p>
 
           <div className="hero-stats">
@@ -655,6 +739,7 @@ export default function App() {
             <div className="stat"><span className="stat-num">5</span><span className="stat-label">Advance Modes</span></div>
             <div className="stat"><span className="stat-num">3</span><span className="stat-label">Formats</span></div>
             <div className="stat"><span className="stat-num">3</span><span className="stat-label">Locales</span></div>
+            <div className="stat"><span className="stat-num">15+</span><span className="stat-label">Extension Hooks</span></div>
           </div>
 
           <div className="hero-actions">
@@ -782,11 +867,123 @@ export default function App() {
           </div>
         </section>
 
+        {/* ══════════ EXTENSIONS ══════════ */}
+        <section id="extensions" className="section">
+          <div className="section-head">
+            <h2>Extension System</h2>
+            <span className="badge badge--purple">New in v1.2.0</span>
+          </div>
+          <p className="section-description">
+            Use <code>createSpotlight</code>, <code>defineExtension</code>, <code>definePreset</code>,
+            and <code>SpotlightProvider</code> to add analytics, custom themes, access control,
+            render overrides, and more — all without modifying core.
+          </p>
+
+          <div className="sub-section">
+            <h3 className="sub-title">SpotlightProvider + Preset + Extensions <span className="new-tag">NEW</span></h3>
+            <p>
+              The guide below uses a <code>SpotlightProvider</code> wrapping the trigger area.
+              It bundles a brand preset (purple buttons, glass template) and an analytics extension
+              that logs lifecycle events to the console. It also demonstrates <code>finishAnimation</code> —
+              a confetti burst when the guide completes.
+            </p>
+            <SpotlightProvider instance={spotlight}>
+              <div className="form-row" style={{ gap: 12 }}>
+                <div
+                  {...guideTarget("ext-demo-target-1")}
+                  className="card card--compact"
+                  style={{ cursor: "default" }}
+                >
+                  <h5>Target 1</h5>
+                  <p>Analytics hooks fire here</p>
+                </div>
+                <div
+                  {...guideTarget("ext-demo-target-2")}
+                  className="card card--compact"
+                  style={{ cursor: "default" }}
+                >
+                  <h5>Target 2</h5>
+                  <p>Themed by brand preset</p>
+                </div>
+              </div>
+              <div className="form-row" style={{ marginTop: 12 }}>
+                <SpotlightGuideOverlay
+                  open={extensionDemoOpen}
+                  guide={extensionDemoGuide}
+                  onClose={() => {
+                    setExtensionDemoOpen(false);
+                    pushEvent("Extension demo closed");
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => {
+                    setExtensionDemoOpen(true);
+                    pushEvent("Extension demo started");
+                  }}
+                >
+                  Run Extension Demo (check console)
+                </button>
+              </div>
+            </SpotlightProvider>
+          </div>
+
+          <div className="sub-section">
+            <h3 className="sub-title">Inline Extension (no provider) <span className="new-tag">NEW</span></h3>
+            <p>
+              You can also pass an <code>extension</code> prop directly to any component instead of using a provider:
+            </p>
+            <div className="form-row">
+              <MarkdownGuideButton
+                content={guideMarkdown}
+                format="markdown"
+                label="Guided with inline analytics"
+                extension={analyticsExtension}
+                onGuideStart={() => pushEvent("Inline extension guide started")}
+                onGuideClose={() => pushEvent("Inline extension guide closed")}
+              />
+            </div>
+          </div>
+
+          <div className="sub-section">
+            <h3 className="sub-title">canStartGuide — Access Control <span className="new-tag">NEW</span></h3>
+            <p>
+              Extensions can implement <code>canStartGuide</code> (sync or async) to gate guide access.
+              The button disables while checking. If denied, <code>onAccessDenied</code> fires.
+            </p>
+            <div className="form-row" style={{ alignItems: "center", gap: 12 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={accessToggle}
+                  onChange={(e) => {
+                    const next = e.target.checked;
+                    setAccessToggle(next);
+                    accessAllowed = next;
+                  }}
+                />
+                Allow access ({accessToggle ? "✓ allowed" : "✗ denied"})
+              </label>
+              <MarkdownGuideButton
+                content={guideMarkdown}
+                format="markdown"
+                label="Gated Guide (500ms check)"
+                extension={accessControlExtension}
+                onGuideStart={() => pushEvent("Gated guide started (access granted)")}
+                onGuideClose={() => pushEvent("Gated guide closed")}
+                onAccessDenied={() => pushEvent("⛔ Guide blocked by canStartGuide")}
+              />
+            </div>
+          </div>
+        </section>
+
         {/* ══════════ COMPONENTS ══════════ */}
         <section id="components" className="section">
           <div className="section-head">
             <h2>Components</h2>
             <span className="badge badge--blue">3 Components</span>
+            <span className="badge badge--green">Updated in v1.2.0</span>
           </div>
 
           <div className="grid-3">
@@ -1283,7 +1480,7 @@ export default function App() {
         <section id="ui-controls" className="section">
           <div className="section-head">
             <h2>UI Controls</h2>
-            <span className="badge badge--orange">New in 1.1.0</span>
+            <span className="badge badge--orange">New in v1.1.0</span>
           </div>
 
           <div className="grid-2">
@@ -1505,7 +1702,7 @@ export default function App() {
         </section>
 
         <footer className="footer">
-          <p>rotaguide-spotlight · Feature Showcase · All features above are live and interactive.</p>
+          <p>rotaguide-spotlight v1.2.0 · Feature Showcase · All features above are live and interactive.</p>
         </footer>
       </main>
     </div>

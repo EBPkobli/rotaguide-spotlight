@@ -448,6 +448,14 @@ function parseTheme(raw: Record<string, unknown>): GuideTheme | undefined {
   return theme;
 }
 
+function parseHighlightPadding(raw: unknown): number | undefined {
+  return toOptionalNumber(raw);
+}
+
+function parseHighlightBorderRadius(raw: unknown): number | undefined {
+  return toOptionalNumber(raw);
+}
+
 function parseMetaI18n(raw: Record<string, unknown>): GuideI18n | undefined {
   const nested =
     asRecord(raw.i18n) ??
@@ -543,6 +551,10 @@ function buildMetaFromRaw(raw: Record<string, unknown>): GuideMeta {
     ),
     overlayColor: toOptionalTrimmedString(raw.overlayColor),
     highlightColor: toOptionalTrimmedString(raw.highlightColor),
+    highlightPadding: parseHighlightPadding(raw.highlightPadding ?? raw.highlightInset),
+    highlightBorderRadius: parseHighlightBorderRadius(
+      raw.highlightBorderRadius ?? raw.highlightRadius
+    ),
     tooltipWidth: typeof raw.tooltipWidth === "number" ? raw.tooltipWidth : undefined,
     showHighlight: typeof raw.showHighlight === "boolean" ? raw.showHighlight : undefined,
     draggable: typeof raw.draggable === "boolean" ? raw.draggable : undefined,
@@ -551,6 +563,12 @@ function buildMetaFromRaw(raw: Record<string, unknown>): GuideMeta {
     tooltipTemplate:
       parseTooltipTemplate(raw.tooltipTemplate ?? raw.tooltipVariant ?? raw.template) ??
       theme?.tooltipTemplate,
+    finishAnimation:
+      typeof raw.finishAnimation === "boolean"
+        ? raw.finishAnimation
+        : typeof raw.completionAnimation === "boolean"
+        ? raw.completionAnimation
+        : undefined,
     i18n: parseMetaI18n(raw),
     pills,
     actions,
@@ -613,6 +631,12 @@ function parseStep(
     showHighlight:
       typeof parsed.showHighlight === "boolean" ? parsed.showHighlight : undefined,
     highlightColor: toOptionalTrimmedString(parsed.highlightColor),
+    highlightPadding: parseHighlightPadding(
+      parsed.highlightPadding ?? parsed.highlightInset
+    ),
+    highlightBorderRadius: parseHighlightBorderRadius(
+      parsed.highlightBorderRadius ?? parsed.highlightRadius
+    ),
     draggable:
       typeof parsed.draggable === "boolean" ? parsed.draggable : undefined,
     highlightStyle: parseHighlightStyle(parsed.highlightStyle),

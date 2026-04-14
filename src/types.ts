@@ -125,12 +125,15 @@ export interface GuideMeta {
   tooltipPlacement?: GuideTooltipPlacement;
   overlayColor?: string;
   highlightColor?: string;
+  highlightPadding?: number;
+  highlightBorderRadius?: number;
   tooltipWidth?: number;
   showHighlight?: boolean;
   draggable?: boolean;
   highlightStyle?: GuideHighlightStyle;
   highlightAnimation?: GuideHighlightAnimation;
   tooltipTemplate?: GuideTooltipTemplate;
+  finishAnimation?: boolean;
   i18n?: GuideI18n;
   pills?: GuidePills;
   actions?: GuideActions;
@@ -151,6 +154,8 @@ export interface GuideStep {
   inputIdleMs?: number;
   showHighlight?: boolean;
   highlightColor?: string;
+  highlightPadding?: number;
+  highlightBorderRadius?: number;
   draggable?: boolean;
   highlightStyle?: GuideHighlightStyle;
   highlightAnimation?: GuideHighlightAnimation;

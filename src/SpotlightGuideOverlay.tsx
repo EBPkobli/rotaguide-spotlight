@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type {
   GuideActions,
@@ -13,7 +13,16 @@ import type {
   GuideTooltipPlacement,
   GuideTooltipTemplate,
 } from "./types";
-import { getRectForElement, isElementVisible, resolveTargetSelector, type TargetRect } from "./dom";
+import { getRectForElement, isElementVisible, resolveTargetSelector as coreResolveTargetSelector, type TargetRect } from "./dom";
+import type {
+  SpotlightExtension,
+  GuideLifecycleEvent,
+  StepLifecycleEvent,
+  GuideCompleteEvent,
+  GuideCloseEvent,
+} from "./extensions";
+import type { SpotlightInstance } from "./spotlight";
+import { useSpotlightInstance } from "./SpotlightContext";
 
 export interface SpotlightGuideOverlayProps {
   open: boolean;
@@ -21,6 +30,10 @@ export interface SpotlightGuideOverlayProps {
   onClose: () => void;
   zIndex?: number;
   className?: string;
+  /** Spotlight instance for extensions/presets. Overrides context if provided. */
+  instance?: SpotlightInstance;
+  /** Inline extension (convenience shortcut — no instance needed). */
+  extension?: SpotlightExtension;
 }
 
 interface Position {
@@ -43,14 +56,29 @@ const DEFAULT_TOOLTIP_TEMPLATE: GuideTooltipTemplate = "clean-white";
 const DEFAULT_TOOLTIP_WIDTH = 360;
 const DEFAULT_TOOLTIP_HEIGHT = 260;
 const DEFAULT_INPUT_IDLE_MS = 1500;
-const HIGHLIGHT_OUTER_OFFSET_PX = 1;
+const DEFAULT_HIGHLIGHT_PADDING_PX = 1;
 const HIGHLIGHT_STROKE_WIDTH_PX = 4;
-const HIGHLIGHT_RADIUS_PX = 10;
+const DEFAULT_HIGHLIGHT_BORDER_RADIUS_PX = 10;
 const TOOLTIP_MARGIN_PX = 16;
 const TOOLTIP_GAP_PX = 12;
 const OVERLAY_OPEN_EVENT = "msgt:overlay-open";
 const MIN_OVERLAY_Z_INDEX = 2147483000;
 type ResolvedAdvanceMode = "click" | "change" | "input-idle" | "none";
+
+function getViewportSize() {
+  if (typeof document !== "undefined") {
+    const { clientWidth, clientHeight } = document.documentElement;
+    if (clientWidth > 0 && clientHeight > 0) {
+      return { width: clientWidth, height: clientHeight };
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    return { width: window.innerWidth, height: window.innerHeight };
+  }
+
+  return { width: 0, height: 0 };
+}
 
 interface StepRequirements {
   requireClick: boolean;
@@ -333,15 +361,32 @@ function resolveTooltipPlacement(
   return "auto";
 }
 
+function resolveHighlightPadding(step: GuideStep | undefined, guide: GuideDefinition): number {
+  const candidate = step?.highlightPadding ?? guide.meta.highlightPadding;
+  if (typeof candidate !== "number" || !Number.isFinite(candidate) || candidate < 0) {
+    return DEFAULT_HIGHLIGHT_PADDING_PX;
+  }
+  return candidate;
+}
+
+function resolveHighlightBorderRadius(step: GuideStep | undefined, guide: GuideDefinition): number {
+  const candidate = step?.highlightBorderRadius ?? guide.meta.highlightBorderRadius;
+  if (typeof candidate !== "number" || !Number.isFinite(candidate) || candidate < 0) {
+    return DEFAULT_HIGHLIGHT_BORDER_RADIUS_PX;
+  }
+  return candidate;
+}
+
 function pickAutoPlacement(
   target: TargetRect,
   tooltipWidth: number,
   tooltipHeight: number
 ): Exclude<GuideTooltipPlacement, "auto"> {
+  const viewport = getViewportSize();
   const available = {
-    bottom: window.innerHeight - (target.top + target.height) - TOOLTIP_MARGIN_PX,
+    bottom: viewport.height - (target.top + target.height) - TOOLTIP_MARGIN_PX,
     top: target.top - TOOLTIP_MARGIN_PX,
-    right: window.innerWidth - (target.left + target.width) - TOOLTIP_MARGIN_PX,
+    right: viewport.width - (target.left + target.width) - TOOLTIP_MARGIN_PX,
     left: target.left - TOOLTIP_MARGIN_PX,
   };
 
@@ -418,11 +463,11 @@ function snapToDevicePixelEnd(value: number): number {
   return Math.ceil(value * dpr) / dpr;
 }
 
-function expandHighlightRect(rect: TargetRect): TargetRect {
-  const left = snapToDevicePixelStart(Math.max(0, rect.left - HIGHLIGHT_OUTER_OFFSET_PX));
-  const top = snapToDevicePixelStart(Math.max(0, rect.top - HIGHLIGHT_OUTER_OFFSET_PX));
-  const right = snapToDevicePixelEnd(rect.left + rect.width + HIGHLIGHT_OUTER_OFFSET_PX);
-  const bottom = snapToDevicePixelEnd(rect.top + rect.height + HIGHLIGHT_OUTER_OFFSET_PX);
+function expandHighlightRect(rect: TargetRect, padding: number): TargetRect {
+  const left = snapToDevicePixelStart(Math.max(0, rect.left - padding));
+  const top = snapToDevicePixelStart(Math.max(0, rect.top - padding));
+  const right = snapToDevicePixelEnd(rect.left + rect.width + padding);
+  const bottom = snapToDevicePixelEnd(rect.top + rect.height + padding);
 
   return {
     left,
@@ -527,24 +572,33 @@ function resolveStepTargetNames(step: GuideStep): string[] {
   return ordered;
 }
 
-function queryTargetElement(target: string): HTMLElement | null {
-  const selector = resolveTargetSelector(target);
+function queryTargetElement(target: string, ext?: SpotlightExtension): HTMLElement | null {
+  // Let extension resolve first, fall back to core
+  let selector: string | undefined;
+  if (ext?.resolveTargetSelector) {
+    selector = ext.resolveTargetSelector(target);
+  }
+  if (!selector) {
+    selector = coreResolveTargetSelector(target);
+  }
   if (!selector) return null;
 
   try {
-    return document.querySelector<HTMLElement>(selector);
+    const elements = Array.from(document.querySelectorAll<HTMLElement>(selector));
+    if (elements.length === 0) return null;
+    return elements.find((element) => isElementVisible(element)) ?? elements[0] ?? null;
   } catch {
     return null;
   }
 }
 
-function resolveVisibleTargets(step: GuideStep): HTMLElement[] {
+function resolveVisibleTargets(step: GuideStep, ext?: SpotlightExtension): HTMLElement[] {
   const targetNames = resolveStepTargetNames(step);
   const unique = new Set<HTMLElement>();
   const resolved: HTMLElement[] = [];
 
   targetNames.forEach((target) => {
-    const element = queryTargetElement(target);
+    const element = queryTargetElement(target, ext);
     if (!element || !isElementVisible(element) || unique.has(element)) return;
     unique.add(element);
     resolved.push(element);
@@ -559,11 +613,30 @@ function targetListHasInputValue(targets: HTMLElement[]): boolean {
 
 export function SpotlightGuideOverlay({
   open,
-  guide,
+  guide: rawGuide,
   onClose,
   zIndex = MIN_OVERLAY_Z_INDEX,
   className,
+  instance: instanceProp,
+  extension: extensionProp,
 }: SpotlightGuideOverlayProps) {
+  // Resolve extension: prop > instance prop > context > none
+  const contextInstance = useSpotlightInstance();
+  const instance = instanceProp ?? contextInstance;
+  const ext: SpotlightExtension | undefined =
+    extensionProp ?? instance?.extension;
+
+  // Apply transformGuide
+  const guide = useMemo(() => {
+    let g = rawGuide;
+    if (ext?.transformGuide) {
+      g = ext.transformGuide(g);
+    }
+    return g;
+  }, [rawGuide, ext]);
+
+  // Merge instance-level theme/i18n defaults into guide
+  // (instance defaults are lower priority than guide-level settings)
   const [stepIndex, setStepIndex] = useState(0);
   const [targetRects, setTargetRects] = useState<TargetRect[]>([]);
   const [targetMissing, setTargetMissing] = useState(false);
@@ -572,12 +645,14 @@ export function SpotlightGuideOverlay({
   const [dragOffset, setDragOffset] = useState<DragState | null>(null);
   const [autoAdvanceProgress, setAutoAdvanceProgress] = useState<number | null>(null);
   const [tooltipSize, setTooltipSize] = useState({ width: DEFAULT_TOOLTIP_WIDTH, height: DEFAULT_TOOLTIP_HEIGHT });
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const activeTargetsRef = useRef<HTMLElement[]>([]);
   const lastFocusedStepRef = useRef<string>("");
   const lastAdvancedStepRef = useRef<string>("");
   const inputIdleTimerRef = useRef<number | null>(null);
   const clickedTargetRef = useRef(false);
+  const lastStepPosRef = useRef<Position | null>(null);
   const overlayIdRef = useRef(
     `msgt-overlay-${Math.random().toString(36).slice(2, 10)}`
   );
@@ -591,7 +666,13 @@ export function SpotlightGuideOverlay({
   }, []);
 
   const steps = guide.steps;
-  const currentStep = steps[stepIndex];
+  const rawStep = steps[stepIndex];
+  // Apply transformStep from extension before any downstream usage
+  const currentStep = useMemo(() => {
+    if (!rawStep) return undefined;
+    if (!ext?.transformStep) return rawStep;
+    return ext.transformStep(rawStep, stepIndex, guide);
+  }, [rawStep, stepIndex, guide, ext]);
   const finished = stepIndex >= steps.length;
   const primaryTargetRect = targetRects[0] ?? null;
   const tooltipWidth = guide.meta.tooltipWidth ?? DEFAULT_TOOLTIP_WIDTH;
@@ -611,14 +692,28 @@ export function SpotlightGuideOverlay({
   const draggable = currentStep
     ? currentStep.draggable ?? guide.meta.draggable ?? true
     : guide.meta.draggable ?? true;
-  const resolvedTexts = useMemo(
-    () => resolveGuideTexts(guide.meta.i18n, currentStep?.i18n),
-    [guide.meta.i18n, currentStep?.i18n]
-  );
-  const resolvedTheme = useMemo(
-    () => resolveTheme(guide.meta.theme, currentStep?.theme),
-    [guide.meta.theme, currentStep?.theme]
-  );
+  const resolvedTexts = useMemo(() => {
+    // Priority: instance defaults < guide.meta < step < extension override
+    let mergedI18n: GuideI18n = {
+      ...(instance?.i18n ?? {}),
+      ...(guide.meta.i18n ?? {}),
+      ...(currentStep?.i18n ?? {}),
+    };
+    if (ext?.resolveI18n) {
+      mergedI18n = ext.resolveI18n(mergedI18n, currentStep, guide);
+    }
+    return resolveGuideTexts(mergedI18n, undefined);
+  }, [guide, currentStep, ext, instance]);
+  const resolvedTheme = useMemo(() => {
+    // Priority: instance defaults < guide.meta < step < extension override
+    const instanceTheme = instance?.theme ?? {};
+    const baseGuideTheme: GuideTheme = { ...instanceTheme, ...(guide.meta.theme ?? {}) };
+    let theme = resolveTheme(baseGuideTheme, currentStep?.theme);
+    if (ext?.resolveTheme) {
+      theme = ext.resolveTheme(theme, currentStep, guide);
+    }
+    return theme;
+  }, [guide, currentStep, ext, instance]);
   const resolvedPills = useMemo(
     () => resolvePills(guide.meta.pills, currentStep?.pills),
     [guide.meta.pills, currentStep?.pills]
@@ -627,10 +722,22 @@ export function SpotlightGuideOverlay({
     () => resolveActions(guide.meta.actions, currentStep?.actions),
     [guide.meta.actions, currentStep?.actions]
   );
-  const tooltipTemplate = useMemo(
-    () => resolveTooltipTemplate(currentStep, guide),
-    [currentStep, guide]
-  );
+  const tooltipTemplate = useMemo(() => {
+    const resolved = resolveTooltipTemplate(currentStep, guide);
+    // If guide/step didn't set a template and we got the library default,
+    // check if the instance has a preferred template
+    if (
+      resolved === DEFAULT_TOOLTIP_TEMPLATE &&
+      !currentStep?.tooltipTemplate &&
+      !currentStep?.theme?.tooltipTemplate &&
+      !guide.meta.tooltipTemplate &&
+      !guide.meta.theme?.tooltipTemplate &&
+      instance?.tooltipTemplate
+    ) {
+      return instance.tooltipTemplate;
+    }
+    return resolved;
+  }, [currentStep, guide, instance]);
   const tooltipPlacement = useMemo(
     () => resolveTooltipPlacement(currentStep, guide),
     [currentStep, guide]
@@ -642,6 +749,10 @@ export function SpotlightGuideOverlay({
   const renderedTooltipWidth = Math.min(tooltipWidth, 540);
 
   const tooltipPos = useMemo(() => {
+    // When finished, stay where the last step's tooltip was
+    if (finished && lastStepPosRef.current) {
+      return lastStepPosRef.current;
+    }
     if (manualPos) return manualPos;
     if (!primaryTargetRect || typeof window === "undefined") {
       return { left: TOOLTIP_MARGIN_PX, top: TOOLTIP_MARGIN_PX };
@@ -649,6 +760,7 @@ export function SpotlightGuideOverlay({
 
     const tipWidth = tooltipSize.width > 0 ? tooltipSize.width : renderedTooltipWidth;
     const tipHeight = tooltipSize.height > 0 ? tooltipSize.height : DEFAULT_TOOLTIP_HEIGHT;
+    const viewport = getViewportSize();
     const resolvedPlacement =
       tooltipPlacement === "auto"
         ? pickAutoPlacement(primaryTargetRect, tipWidth, tipHeight)
@@ -671,10 +783,11 @@ export function SpotlightGuideOverlay({
       y = primaryTargetRect.top + primaryTargetRect.height + TOOLTIP_GAP_PX;
     }
 
-    x = clamp(x, TOOLTIP_MARGIN_PX, window.innerWidth - tipWidth - TOOLTIP_MARGIN_PX);
-    y = clamp(y, TOOLTIP_MARGIN_PX, window.innerHeight - tipHeight - TOOLTIP_MARGIN_PX);
+    x = clamp(x, TOOLTIP_MARGIN_PX, viewport.width - tipWidth - TOOLTIP_MARGIN_PX);
+    y = clamp(y, TOOLTIP_MARGIN_PX, viewport.height - tipHeight - TOOLTIP_MARGIN_PX);
     return { left: x, top: y };
   }, [
+    finished,
     manualPos,
     primaryTargetRect,
     renderedTooltipWidth,
@@ -682,6 +795,17 @@ export function SpotlightGuideOverlay({
     tooltipSize.height,
     tooltipSize.width,
   ]);
+
+  // Track close reason for lifecycle hooks
+  const closeReasonRef = useRef<GuideCloseEvent["reason"]>("user");
+
+  const handleClose = useCallback(
+    (reason: GuideCloseEvent["reason"] = "user") => {
+      closeReasonRef.current = reason;
+      onClose();
+    },
+    [onClose]
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -693,9 +817,58 @@ export function SpotlightGuideOverlay({
     setDragOffset(null);
     setAutoAdvanceProgress(null);
     clickedTargetRef.current = false;
+    lastStepPosRef.current = null;
+    setShowConfetti(false);
     lastFocusedStepRef.current = "";
     lastAdvancedStepRef.current = "";
   }, [open, guide.meta.id]);
+
+  // Extension lifecycle: onGuideStart
+  useEffect(() => {
+    if (!open || !ext?.onGuideStart) return;
+    ext.onGuideStart({ guideId: guide.meta.id, guide });
+  }, [open, guide.meta.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Extension lifecycle: onStepChange
+  useEffect(() => {
+    if (!open || finished || !currentStep || !ext?.onStepChange) return;
+    ext.onStepChange({
+      guideId: guide.meta.id,
+      guide,
+      stepIndex,
+      step: currentStep,
+      totalSteps: steps.length,
+    });
+  }, [open, stepIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Extension lifecycle: onGuideComplete
+  useEffect(() => {
+    if (!open || !finished || !ext?.onGuideComplete) return;
+    ext.onGuideComplete({
+      guideId: guide.meta.id,
+      guide,
+      completedSteps: steps.length,
+      totalSteps: steps.length,
+    });
+  }, [open, finished]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Extension lifecycle: onGuideClose (fires when open goes from true to false)
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (open) {
+      wasOpenRef.current = true;
+      return;
+    }
+    if (wasOpenRef.current && ext?.onGuideClose) {
+      ext.onGuideClose({
+        guideId: guide.meta.id,
+        guide,
+        stepIndex,
+        reason: closeReasonRef.current,
+      });
+    }
+    wasOpenRef.current = false;
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open || typeof window === "undefined") return;
@@ -738,14 +911,14 @@ export function SpotlightGuideOverlay({
       const customEvent = event as CustomEvent<{ id?: string }>;
       const senderId = customEvent.detail?.id;
       if (!senderId || senderId === overlayIdRef.current) return;
-      onClose();
+      handleClose("external");
     };
 
     window.addEventListener(OVERLAY_OPEN_EVENT, onOverlayOpen as EventListener);
     return () => {
       window.removeEventListener(OVERLAY_OPEN_EVENT, onOverlayOpen as EventListener);
     };
-  }, [open, onClose]);
+  }, [open, handleClose]);
 
   useEffect(() => {
     if (!open || typeof window === "undefined") return;
@@ -760,11 +933,15 @@ export function SpotlightGuideOverlay({
     clickedTargetRef.current = false;
     lastAdvancedStepRef.current = "";
     setAutoAdvanceProgress(null);
+    // When transitioning to finished, keep the last tooltip position
+    if (finished) {
+      return;
+    }
     setTargetRects([]);
     // Reset manual drag position on step change so tooltip follows the new target.
     setManualPos(null);
     setDragOffset(null);
-  }, [currentStep?.id, open]);
+  }, [currentStep?.id, open, finished]);
 
   useEffect(() => {
     if (!draggable) {
@@ -777,7 +954,7 @@ export function SpotlightGuideOverlay({
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose();
+        handleClose("escape");
       }
     };
 
@@ -785,24 +962,25 @@ export function SpotlightGuideOverlay({
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, handleClose]);
 
   useEffect(() => {
     if (!open || !dragOffset) return;
 
     const onPointerMove = (event: PointerEvent) => {
+      const viewport = getViewportSize();
       const deltaX = event.clientX - dragOffset.startX;
       const deltaY = event.clientY - dragOffset.startY;
       const nextLeft = clamp(
         dragOffset.startLeft + deltaX,
         TOOLTIP_MARGIN_PX,
-        window.innerWidth - renderedTooltipWidth - TOOLTIP_MARGIN_PX
+        viewport.width - renderedTooltipWidth - TOOLTIP_MARGIN_PX
       );
       const tooltipHeight = tooltipSize.height > 0 ? tooltipSize.height : DEFAULT_TOOLTIP_HEIGHT;
       const nextTop = clamp(
         dragOffset.startTop + deltaY,
         TOOLTIP_MARGIN_PX,
-        window.innerHeight - tooltipHeight - TOOLTIP_MARGIN_PX
+        viewport.height - tooltipHeight - TOOLTIP_MARGIN_PX
       );
       setManualPos({ left: nextLeft, top: nextTop });
     };
@@ -831,7 +1009,7 @@ export function SpotlightGuideOverlay({
     };
 
     const sync = () => {
-      const targets = resolveVisibleTargets(currentStep);
+      const targets = resolveVisibleTargets(currentStep, ext);
       if (targets.length === 0) {
         clearActiveTargets();
         setTargetRects([]);
@@ -881,13 +1059,13 @@ export function SpotlightGuideOverlay({
       }
       clearActiveTargets();
     };
-  }, [clearActiveTargets, currentStep, finished, mode, open]);
+  }, [clearActiveTargets, currentStep, ext, finished, mode, open]);
 
   const attemptAdvance = useCallback(() => {
     if (!open || finished || !currentStep) return;
     if (lastAdvancedStepRef.current === currentStep.id) return;
 
-    const targets = resolveVisibleTargets(currentStep);
+    const targets = resolveVisibleTargets(currentStep, ext);
     const requirements = resolveStepRequirements(currentStep, mode);
 
     if (requirements.requireClick && !clickedTargetRef.current) {
@@ -906,7 +1084,7 @@ export function SpotlightGuideOverlay({
     setHint("");
     setAutoAdvanceProgress(null);
     setStepIndex((prev) => Math.min(prev + 1, steps.length));
-  }, [currentStep, finished, mode, open, resolvedTexts.requireClickMessage, resolvedTexts.requireInputMessage, steps.length]);
+  }, [currentStep, ext, finished, mode, open, resolvedTexts.requireClickMessage, resolvedTexts.requireInputMessage, steps.length]);
 
   useEffect(() => {
     if (!open || finished || !currentStep) return;
@@ -915,7 +1093,7 @@ export function SpotlightGuideOverlay({
     const shouldShowTimerLoading = currentStep.showAutoAdvanceProgress ?? true;
     const autoAdvanceMs =
       typeof currentStep.autoAdvanceMs === "number" ? currentStep.autoAdvanceMs : 0;
-    const getTargets = () => resolveVisibleTargets(currentStep);
+    const getTargets = () => resolveVisibleTargets(currentStep, ext);
 
     const onClickCapture = (event: MouseEvent) => {
       const targets = getTargets();
@@ -1032,11 +1210,24 @@ export function SpotlightGuideOverlay({
     };
   }, [attemptAdvance, currentStep, finished, mode, open, resolvedTexts.clickHighlightedMessage]);
 
+  // Track the tooltip position on every non-finished render so we have it
+  // available synchronously when the guide finishes.
+  useEffect(() => {
+    if (!finished && primaryTargetRect) {
+      lastStepPosRef.current = { left: tooltipPos.left, top: tooltipPos.top };
+    }
+  });
+
   useEffect(() => {
     if (finished) {
       clearActiveTargets();
+      if (guide.meta.finishAnimation) {
+        setShowConfetti(true);
+      }
+    } else {
+      setShowConfetti(false);
     }
-  }, [clearActiveTargets, finished]);
+  }, [clearActiveTargets, finished]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!open) {
     return null;
@@ -1116,9 +1307,11 @@ export function SpotlightGuideOverlay({
     highlightAnimation === "dash" || highlightAnimation === "color-dash";
   const animateColor =
     highlightAnimation === "color" || highlightAnimation === "color-dash";
-  const highlightRects = targetRects.map(expandHighlightRect);
+  const highlightPadding = resolveHighlightPadding(currentStep, guide);
+  const highlightBorderRadius = resolveHighlightBorderRadius(currentStep, guide);
+  const highlightRects = targetRects.map((rect) => expandHighlightRect(rect, highlightPadding));
   const highlightStrokeInset = HIGHLIGHT_STROKE_WIDTH_PX / 2;
-  const highlightStrokeRadius = Math.max(0, HIGHLIGHT_RADIUS_PX - highlightStrokeInset);
+  const highlightStrokeRadius = Math.max(0, highlightBorderRadius - highlightStrokeInset);
   const highlightStrokeClassName = [
     "msgt-highlight-stroke-rect",
     useDashedStroke ? "msgt-highlight-stroke-rect--dash" : "",
@@ -1146,10 +1339,53 @@ export function SpotlightGuideOverlay({
   const completedTitle =
     guide.meta.tooltipTitle ??
     interpolate(resolvedTexts.completedTitleTemplate, { title: guide.meta.title });
-  const viewportWidth = typeof window !== "undefined" ? window.innerWidth : 0;
-  const viewportHeight = typeof window !== "undefined" ? window.innerHeight : 0;
+  const { width: viewportWidth, height: viewportHeight } = getViewportSize();
   const highlightMaskId = `${overlayIdRef.current}-highlight-mask`;
   const overlayZIndex = Math.max(zIndex, MIN_OVERLAY_Z_INDEX);
+
+  // Build render override context for extensions
+  const tooltipRenderContext = currentStep
+    ? {
+        guide,
+        step: currentStep,
+        stepIndex,
+        totalSteps: steps.length,
+        tooltipTemplate,
+        goNext: attemptAdvance,
+        goBack: () => {
+          setHint("");
+          setStepIndex((prev) => Math.max(0, prev - 1));
+        },
+        skip: () => {
+          setHint("");
+          setStepIndex((prev) => Math.min(prev + 1, steps.length));
+        },
+        close: () => handleClose("user"),
+      }
+    : null;
+
+  const completedRenderContext = finished
+    ? {
+        guide,
+        completedSteps: steps.length,
+        totalSteps: steps.length,
+        close: () => handleClose("finish"),
+      }
+    : null;
+
+  // Check for render overrides from extension
+  const customTooltipBody =
+    ext?.renderTooltipBody && tooltipRenderContext
+      ? ext.renderTooltipBody(tooltipRenderContext)
+      : undefined;
+  const customTooltipSupplement =
+    ext?.renderTooltipSupplement && tooltipRenderContext
+      ? ext.renderTooltipSupplement(tooltipRenderContext)
+      : undefined;
+  const customCompletedScreen =
+    ext?.renderCompletedScreen && completedRenderContext
+      ? ext.renderCompletedScreen(completedRenderContext)
+      : undefined;
 
   const overlayNode = (
     <div className={`msgt-overlay-root ${className ?? ""}`.trim()} style={{ zIndex: overlayZIndex }}>
@@ -1180,8 +1416,8 @@ export function SpotlightGuideOverlay({
                   y={rect.top}
                   width={rect.width}
                   height={rect.height}
-                  rx={HIGHLIGHT_RADIUS_PX}
-                  ry={HIGHLIGHT_RADIUS_PX}
+                  rx={highlightBorderRadius}
+                  ry={highlightBorderRadius}
                   fill="#000000"
                 />
               ))}
@@ -1247,6 +1483,7 @@ export function SpotlightGuideOverlay({
         }}
         >
           {!finished && currentStep ? (
+            customTooltipBody ?? (
             <>
               {showTooltipTop && (
                 <div
@@ -1280,7 +1517,7 @@ export function SpotlightGuideOverlay({
                       aria-label={resolvedTexts.closeButtonLabel}
                       title={resolvedTexts.closeButtonLabel}
                       onPointerDown={(event) => event.stopPropagation()}
-                      onClick={onClose}
+                      onClick={() => handleClose("user")}
                     >
                       x
                     </button>
@@ -1290,6 +1527,7 @@ export function SpotlightGuideOverlay({
 
               <h3 className="msgt-title">{currentStep.title}</h3>
               <p className="msgt-description">{currentStep.description}</p>
+              {customTooltipSupplement}
 
               {targetMissing ? (
                 <p className="msgt-hint msgt-hint-warning">{targetMissingMessage}</p>
@@ -1338,24 +1576,39 @@ export function SpotlightGuideOverlay({
                 </div>
               )}
             </>
+            )
           ) : (
+            customCompletedScreen ?? (
             <>
               <h3 className="msgt-title">{completedTitle}</h3>
               <p className="msgt-description">{resolvedTexts.completedDescription}</p>
               <div className="msgt-tooltip-actions">
-                <button type="button" className="msgt-btn msgt-btn-primary" onClick={onClose}>
+                <button type="button" className="msgt-btn msgt-btn-primary" onClick={() => handleClose("finish")}>
                   {resolvedTexts.finishButtonLabel}
                 </button>
               </div>
             </>
+            )
           )}
         </div>
+        {showConfetti && (
+          <div className="msgt-confetti-container" style={{ left: tooltipPos.left, top: tooltipPos.top }}>
+            {Array.from({ length: 30 }, (_, i) => (
+              <span key={i} className="msgt-confetti-particle" style={{ '--ci': i } as React.CSSProperties} />
+            ))}
+          </div>
+        )}
     </div>
   );
 
+  // Apply wrapOverlay from extension
+  const wrappedOverlayNode = ext?.wrapOverlay
+    ? ext.wrapOverlay(overlayNode, guide)
+    : overlayNode;
+
   if (typeof document === "undefined") {
-    return overlayNode;
+    return wrappedOverlayNode as React.JSX.Element;
   }
 
-  return createPortal(overlayNode, document.body);
+  return createPortal(wrappedOverlayNode, document.body);
 }

@@ -595,3 +595,74 @@
   display: flex;
   justify-content: flex-end;
 }
+
+/* ── Confetti animation ────────────────────────────────── */
+
+.msgt-confetti-container {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2147483647;
+  width: 0;
+  height: 0;
+}
+
+.msgt-confetti-particle {
+  position: absolute;
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: msgt-confetti-burst 1.4s ease-out forwards;
+  animation-delay: calc(var(--ci) * 0.03s);
+}
+
+/* Assign varied colors */
+.msgt-confetti-particle:nth-child(5n+1) { background: #ff6b6b; }
+.msgt-confetti-particle:nth-child(5n+2) { background: #ffd93d; }
+.msgt-confetti-particle:nth-child(5n+3) { background: #6bcb77; }
+.msgt-confetti-particle:nth-child(5n+4) { background: #4d96ff; }
+.msgt-confetti-particle:nth-child(5n+5) { background: #c084fc; }
+
+/* Assign varied sizes */
+.msgt-confetti-particle:nth-child(3n+1) { width: 6px; height: 6px; }
+.msgt-confetti-particle:nth-child(3n+2) { width: 10px; height: 5px; border-radius: 1px; }
+
+/* Spread particles in different directions using nth-child */
+.msgt-confetti-particle:nth-child(6n+1) { --cx: -80px; --cy: -120px; }
+.msgt-confetti-particle:nth-child(6n+2) { --cx: 70px;  --cy: -100px; }
+.msgt-confetti-particle:nth-child(6n+3) { --cx: -50px; --cy: -140px; }
+.msgt-confetti-particle:nth-child(6n+4) { --cx: 100px; --cy: -80px;  }
+.msgt-confetti-particle:nth-child(6n+5) { --cx: -110px;--cy: -90px;  }
+.msgt-confetti-particle:nth-child(6n+6) { --cx: 40px;  --cy: -130px; }
+
+/* Add horizontal variety with even/odd */
+.msgt-confetti-particle:nth-child(odd)  { --cx-jitter: -20px; }
+.msgt-confetti-particle:nth-child(even) { --cx-jitter: 25px;  }
+
+@keyframes msgt-confetti-burst {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  30% {
+    opacity: 1;
+    transform:
+      translate(
+        calc(var(--cx, 0px) + var(--cx-jitter, 0px)),
+        var(--cy, -100px)
+      )
+      rotate(180deg)
+      scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform:
+      translate(
+        calc(var(--cx, 0px) + var(--cx-jitter, 0px) * 1.5),
+        60px
+      )
+      rotate(360deg)
+      scale(0.4);
+  }
+}
