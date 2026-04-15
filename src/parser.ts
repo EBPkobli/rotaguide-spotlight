@@ -14,6 +14,7 @@ import type {
   GuidePrimaryAction,
   GuideSourceFormat,
   GuideStep,
+  GuideStepPillPosition,
   GuideTheme,
   GuideTextTransform,
   GuideTooltipPlacement,
@@ -242,6 +243,15 @@ function parseHighlightAnimation(value: unknown): GuideHighlightAnimation | unde
   return normalized as GuideHighlightAnimation;
 }
 
+function parseStepPillPosition(value: unknown): GuideStepPillPosition | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "top") return "top";
+  if (normalized === "title") return "title";
+  if (normalized === "bottom") return "bottom";
+  return undefined;
+}
+
 function parsePrimaryAction(value: unknown): GuidePrimaryAction | undefined {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim().toLowerCase();
@@ -324,6 +334,7 @@ function parsePills(raw: Record<string, unknown>): GuidePills | undefined {
       toOptionalBoolean(raw.showKindPill) ??
       toOptionalBoolean(raw.showKindTag) ??
       toOptionalBoolean(raw.showListTag),
+    stepPillPosition: parseStepPillPosition(nested.stepPillPosition ?? raw.stepPillPosition),
   };
 
   if (Object.values(pills).every((value) => typeof value === "undefined")) {
@@ -569,6 +580,8 @@ function buildMetaFromRaw(raw: Record<string, unknown>): GuideMeta {
         : typeof raw.completionAnimation === "boolean"
         ? raw.completionAnimation
         : undefined,
+    overlayLock: typeof raw.overlayLock === "boolean" ? raw.overlayLock : undefined,
+    showFollowHint: typeof raw.showFollowHint === "boolean" ? raw.showFollowHint : undefined,
     i18n: parseMetaI18n(raw),
     pills,
     actions,
@@ -650,6 +663,10 @@ function parseStep(
       typeof parsed.mustClickTarget === "boolean" ? parsed.mustClickTarget : undefined,
     mustEnterValue:
       typeof parsed.mustEnterValue === "boolean" ? parsed.mustEnterValue : undefined,
+    overlayLock:
+      typeof parsed.overlayLock === "boolean" ? parsed.overlayLock : undefined,
+    showFollowHint:
+      typeof parsed.showFollowHint === "boolean" ? parsed.showFollowHint : undefined,
     i18n,
     pills,
     actions,

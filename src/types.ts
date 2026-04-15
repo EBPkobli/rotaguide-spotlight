@@ -17,6 +17,7 @@ export const GUIDE_HIGHLIGHT_ANIMATIONS = [
   "dash",
   "color-dash",
 ] as const;
+export const GUIDE_STEP_PILL_POSITIONS = ["top", "title", "bottom"] as const;
 export const GUIDE_PRIMARY_ACTIONS = ["back", "next", "skip"] as const;
 export const GUIDE_TEXT_TRANSFORMS = [
   "none",
@@ -49,6 +50,7 @@ export type GuideSourceFormat = (typeof GUIDE_SOURCE_FORMATS)[number];
 export type GuideHighlightStyle = (typeof GUIDE_HIGHLIGHT_STYLES)[number];
 export type GuideHighlightAnimation = (typeof GUIDE_HIGHLIGHT_ANIMATIONS)[number];
 export type GuidePrimaryAction = (typeof GUIDE_PRIMARY_ACTIONS)[number];
+export type GuideStepPillPosition = (typeof GUIDE_STEP_PILL_POSITIONS)[number];
 export type GuideTextTransform = (typeof GUIDE_TEXT_TRANSFORMS)[number];
 export type GuideTooltipPlacement = (typeof GUIDE_TOOLTIP_PLACEMENTS)[number];
 export type GuideTooltipTemplate = (typeof GUIDE_TOOLTIP_TEMPLATES)[number];
@@ -56,6 +58,7 @@ export type GuideTooltipTemplate = (typeof GUIDE_TOOLTIP_TEMPLATES)[number];
 export interface GuidePills {
   showStepProgress?: boolean;
   showKind?: boolean;
+  stepPillPosition?: GuideStepPillPosition;
 }
 
 export interface GuideActions {
@@ -134,6 +137,8 @@ export interface GuideMeta {
   highlightAnimation?: GuideHighlightAnimation;
   tooltipTemplate?: GuideTooltipTemplate;
   finishAnimation?: boolean;
+  overlayLock?: boolean;
+  showFollowHint?: boolean;
   i18n?: GuideI18n;
   pills?: GuidePills;
   actions?: GuideActions;
@@ -164,6 +169,8 @@ export interface GuideStep {
   showAutoAdvanceProgress?: boolean;
   mustClickTarget?: boolean;
   mustEnterValue?: boolean;
+  overlayLock?: boolean;
+  showFollowHint?: boolean;
   i18n?: GuideI18n;
   pills?: GuidePills;
   actions?: GuideActions;

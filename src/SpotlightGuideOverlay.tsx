@@ -153,7 +153,7 @@ const GUIDE_TEXTS_EN: GuideTextSet = {
   followTargetMessage: "Follow the target element to continue.",
   requireClickMessage: "This step requires clicking the target area.",
   requireInputMessage: "This step requires entering a value in the target input.",
-  clickHighlightedMessage: "Click the yellow highlighted area to continue.",
+  clickHighlightedMessage: "Click the highlighted area to continue.",
   autoAdvanceMessage: "Auto advancing in {seconds}s",
   completedTitleTemplate: "{title} completed",
   completedDescription: "Guide is complete. You can now run this flow yourself.",
@@ -171,7 +171,7 @@ const GUIDE_TEXTS_TR: GuideTextSet = {
   followTargetMessage: "Devam etmek için hedef elementi takip et.",
   requireClickMessage: "Bu adımda hedef alana tıklanması zorunludur.",
   requireInputMessage: "Bu adımda hedef alana değer girilmesi zorunludur.",
-  clickHighlightedMessage: "Devam etmek için sarı vurgulu alana tıkla.",
+  clickHighlightedMessage: "Devam etmek için vurgulu alana tıkla.",
   autoAdvanceMessage: "{seconds}s içinde otomatik ilerleniyor",
   completedTitleTemplate: "{title} tamamlandı",
   completedDescription: "Rehber tamamlandı. Akışı artık kendin uygulayabilirsin.",
@@ -189,7 +189,7 @@ const GUIDE_TEXTS_DA: GuideTextSet = {
   followTargetMessage: "Følg mål-elementet for at fortsætte.",
   requireClickMessage: "Dette trin kræver klik på målområdet.",
   requireInputMessage: "Dette trin kræver, at du indtaster en værdi i målfeltet.",
-  clickHighlightedMessage: "Klik på det gule fremhævede område for at fortsætte.",
+  clickHighlightedMessage: "Klik på det fremhævede område for at fortsætte.",
   autoAdvanceMessage: "Fortsætter automatisk om {seconds}s",
   completedTitleTemplate: "{title} fuldført",
   completedDescription: "Guiden er fuldført. Nu kan du selv køre flowet.",
@@ -677,6 +677,9 @@ export function SpotlightGuideOverlay({
   const primaryTargetRect = targetRects[0] ?? null;
   const tooltipWidth = guide.meta.tooltipWidth ?? DEFAULT_TOOLTIP_WIDTH;
   const overlayColor = guide.meta.overlayColor ?? DEFAULT_OVERLAY_COLOR;
+  const overlayLockMeta = guide.meta.overlayLock ?? false;
+  const overlayLock = currentStep?.overlayLock ?? overlayLockMeta;
+  const showFollowHint = currentStep?.showFollowHint ?? guide.meta.showFollowHint ?? true;
   const highlightColor =
     currentStep?.highlightColor ?? guide.meta.highlightColor ?? DEFAULT_HIGHLIGHT_COLOR;
   const highlightStyle =
@@ -1281,7 +1284,11 @@ export function SpotlightGuideOverlay({
         ];
   const hasActionButtons = actionButtons.length > 0;
   const hasVisiblePills = showStepProgressPill || showKindPill;
-  const showTooltipTop = Boolean(currentStep && (hasVisiblePills || showCloseButton || draggable));
+  const stepPillPosition = resolvedPills.stepPillPosition ?? "top";
+  const pillsInTop = hasVisiblePills && stepPillPosition === "top";
+  const pillsInTitle = hasVisiblePills && stepPillPosition === "title";
+  const pillsInBottom = hasVisiblePills && stepPillPosition === "bottom";
+  const showTooltipTop = Boolean(currentStep && (pillsInTop || showCloseButton || draggable));
   const autoAdvanceEnabled = Boolean(
     currentStep &&
       typeof currentStep.autoAdvanceMs === "number" &&
@@ -1388,7 +1395,7 @@ export function SpotlightGuideOverlay({
       : undefined;
 
   const overlayNode = (
-    <div className={`msgt-overlay-root ${className ?? ""}`.trim()} style={{ zIndex: overlayZIndex }}>
+    <div className={`msgt-overlay-root ${overlayLock ? "msgt-overlay-root--locked" : ""} ${className ?? ""}`.trim()} style={{ zIndex: overlayZIndex }}>
       {!finished && showHighlight && highlightRects.length > 0 && viewportWidth > 0 && viewportHeight > 0 ? (
         <svg
           className="msgt-overlay-backdrop-svg"
@@ -1488,7 +1495,7 @@ export function SpotlightGuideOverlay({
               {showTooltipTop && (
                 <div
                   className={`msgt-tooltip-top${
-                    hasVisiblePills ? "" : " msgt-tooltip-top--minimal msgt-tooltip-top--floating"
+                    pillsInTop ? "" : " msgt-tooltip-top--minimal msgt-tooltip-top--floating"
                   }`}
                   style={{ cursor: draggable ? (dragOffset ? "grabbing" : "grab") : "default" }}
                   onPointerDown={(event) => {
@@ -1503,10 +1510,10 @@ export function SpotlightGuideOverlay({
                   }}
                 >
                   <div className="msgt-tooltip-top-left">
-                    {showStepProgressPill && (
+                    {pillsInTop && showStepProgressPill && (
                       <span className="msgt-pill msgt-pill-step">{stepProgressText}</span>
                     )}
-                    {showKindPill && (
+                    {pillsInTop && showKindPill && (
                       <span className="msgt-pill msgt-pill-kind">{currentStep.kind}</span>
                     )}
                   </div>
@@ -1525,19 +1532,33 @@ export function SpotlightGuideOverlay({
                 </div>
               )}
 
-              <h3 className="msgt-title">{currentStep.title}</h3>
+              {pillsInTitle ? (
+                <div className="msgt-title-row">
+                  <h3 className="msgt-title">{currentStep.title}</h3>
+                  <div className="msgt-title-pills">
+                    {showStepProgressPill && (
+                      <span className="msgt-pill msgt-pill-step">{stepProgressText}</span>
+                    )}
+                    {showKindPill && (
+                      <span className="msgt-pill msgt-pill-kind">{currentStep.kind}</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <h3 className="msgt-title">{currentStep.title}</h3>
+              )}
               <p className="msgt-description">{currentStep.description}</p>
               {customTooltipSupplement}
 
               {targetMissing ? (
                 <p className="msgt-hint msgt-hint-warning">{targetMissingMessage}</p>
-              ) : (
+              ) : showFollowHint ? (
                 <p className="msgt-hint">
                   {showHighlight
                     ? resolvedTexts.followHighlightMessage
                     : resolvedTexts.followTargetMessage}
                 </p>
-              )}
+              ) : null}
 
               {hint && <p className="msgt-hint msgt-hint-warning">{hint}</p>}
               {showAutoAdvanceProgress && (
@@ -1555,6 +1576,17 @@ export function SpotlightGuideOverlay({
                       style={{ width: `${autoAdvanceProgressPercent}%` }}
                     />
                   </div>
+                </div>
+              )}
+
+              {pillsInBottom && (
+                <div className="msgt-bottom-pills">
+                  {showStepProgressPill && (
+                    <span className="msgt-pill msgt-pill-step">{stepProgressText}</span>
+                  )}
+                  {showKindPill && (
+                    <span className="msgt-pill msgt-pill-kind">{currentStep.kind}</span>
+                  )}
                 </div>
               )}
 

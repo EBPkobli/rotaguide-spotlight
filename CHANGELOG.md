@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.2.2 - 2026-04-15
+
+### Added
+- `overlayLock` option at meta and step level — locks overlay so nothing behind is clickable except spotlight targets.
+- `showFollowHint` option at meta and step level — hides "Follow the highlighted target" message.
+- `stepPillPosition` option (`"top"` | `"title"` | `"bottom"`) — controls where step progress pill renders.
+
+### Changed
+- Default step pill colors changed to DFDS blue (`#002B45`) background with white text.
+- Removed "yellow" from `clickHighlightedMessage` default text.
+- Bumped `.msgt-guide-target-active` z-index to `2147483001`.
+- Title-row pills (position `"title"`) now use smaller font (`10px`) and tighter padding.
+
+### Fixed
+- Title-row pill layout uses reduced gap (`8px` row, `4px` between pills).
+
+## 1.2.1 - 2026-04-07
+
 ## 1.1.3 - 2026-03-12
 
 ### Fixed

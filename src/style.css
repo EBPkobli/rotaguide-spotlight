@@ -4,6 +4,15 @@
   pointer-events: none;
 }
 
+.msgt-overlay-root--locked {
+  pointer-events: auto;
+}
+
+.msgt-overlay-root--locked .msgt-overlay-backdrop,
+.msgt-overlay-root--locked .msgt-overlay-backdrop-svg {
+  pointer-events: auto;
+}
+
 .msgt-overlay-backdrop {
   position: absolute;
   inset: 0;
@@ -82,7 +91,8 @@
 
 .msgt-guide-target-active {
   position: relative !important;
-  z-index: 3005 !important;
+  z-index: 2147483001 !important;
+  pointer-events: auto !important;
 }
 
 .msgt-tooltip {
@@ -97,8 +107,8 @@
   --msgt-description-color: rgb(77, 94, 107);
   --msgt-hint-color: rgb(77, 94, 107);
   --msgt-warning-color: rgb(191, 28, 28);
-  --msgt-pill-step-bg: rgb(255, 245, 204);
-  --msgt-pill-step-text: rgb(0, 43, 69);
+  --msgt-pill-step-bg: rgb(0, 43, 69);
+  --msgt-pill-step-text: rgb(255, 255, 255);
   --msgt-pill-kind-bg: rgb(229, 244, 255);
   --msgt-pill-kind-text: rgb(26, 99, 245);
   --msgt-pill-font-size: 11px;
@@ -437,6 +447,39 @@
 
 .msgt-tooltip-top--floating + .msgt-title {
   padding-right: 36px;
+}
+
+.msgt-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.msgt-title-row .msgt-title {
+  flex: 0 1 auto;
+}
+
+.msgt-title-pills {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.msgt-title-pills .msgt-pill {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+.msgt-tooltip-top--floating + .msgt-title-row {
+  padding-right: 36px;
+}
+
+.msgt-bottom-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
 }
 
 .msgt-description {
