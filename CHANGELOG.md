@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.3.0 - 2026-04-16
+
+### Added
+- **Button role classes** — Every action button now gets a semantic CSS class: `msgt-btn--back`, `msgt-btn--skip`, `msgt-btn--next`. Allows precise per-button styling without fragile `:nth-child` selectors.
+- **`buttonOrder`** — New `actions.buttonOrder` option (meta & step level). Accepts an ordered array of `["skip", "back", "next"]` to control the visual order of action buttons. When set, buttons render in the specified sequence instead of the default primary-last ordering.
+- **Button font CSS variables** — Two new CSS custom properties on `.msgt-tooltip`:
+  - `--msgt-btn-font-weight` (default: `600`) — controls button font weight.
+  - `--msgt-btn-font-family` (default: `inherit`) — controls button font family.
+  - Also exposed via `GuideTheme` as `buttonFontWeight` and `buttonFontFamily`.
+- **`targetInteractive`** — New step-level boolean option. Set `targetInteractive: false` to add `pointer-events: none` to the spotlight target via `msgt-guide-target-inactive` class. Useful for "look but don't touch" steps (e.g. showing a filter dropdown without allowing changes).
+- **`targetAttention`** — New step-level option to draw user attention to the target element. Adds a CSS animation class to the spotlighted target. Values:
+  - `"none"` — no animation (default).
+  - `"pulse"` — subtle scale pulse (`msgt-guide-target-attention-pulse`).
+  - `"border-pulse"` — border-only pulse without center circle (`msgt-guide-target-attention-border-pulse`).
+  - `"bounce"` — vertical bounce (`msgt-guide-target-attention-bounce`).
+  - `"glow"` — blue box-shadow glow (`msgt-guide-target-attention-glow`).
+  - Parser also accepts aliases: `"throb"` → pulse, `"jump"` → bounce, `"shine"` → glow, `"borderpulse"` → border-pulse.
+- **`tooltipOffsetX` and `tooltipOffsetY`** — New meta/step options to shift tooltip position after placement resolution (`top/right/bottom/left/auto`).
+- **Skip tour control** — Added `actions.showSkipTour` and `i18n.skipTourButtonLabel` for a dedicated "Skip tour" action independent from per-step skip behavior.
+- **Theme token expansion** — Added title, description, button and disabled-state theme tokens (font family/size/weight, radius, spacing, ghost hover, disabled colors).
+- **Highlight ring fill layer** — Added `msgt-highlight-fill` overlay with even-odd clip-path support for padding-fill scenarios.
+- Exported `GUIDE_TARGET_ATTENTIONS` constant and `GuideTargetAttention` type.
+
+### Changed
+- `.msgt-btn` now uses `var(--msgt-btn-font-weight)` and `var(--msgt-btn-font-family)` instead of hardcoded `font-weight: 600`.
+- `.msgt-btn` sizing and disabled styles now use dedicated CSS variables (`--msgt-btn-font-size`, paddings, radius, disabled bg/text/border).
+- `advanceOn: "click"` and `advanceOn: "change"` steps with explicit `actions.showNext: true` no longer auto-advance; requirements now enable the Next button instead.
+- `clearActiveTargets` cleanup now also removes `msgt-guide-target-inactive` and all attention animation classes.
+
+### Fixed
+- Action merging now ignores `undefined` values from step-level actions so meta-level values are preserved (for example `showSkipTour` no longer gets unintentionally reset).
+- Close button is automatically hidden when `showSkipTour` is active to avoid duplicate dismiss actions.
+
 ## 1.2.2 - 2026-04-15
 
 ### Added

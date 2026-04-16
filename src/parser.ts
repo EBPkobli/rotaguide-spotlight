@@ -15,6 +15,7 @@ import type {
   GuideSourceFormat,
   GuideStep,
   GuideStepPillPosition,
+  GuideTargetAttention,
   GuideTheme,
   GuideTextTransform,
   GuideTooltipPlacement,
@@ -243,6 +244,18 @@ function parseHighlightAnimation(value: unknown): GuideHighlightAnimation | unde
   return normalized as GuideHighlightAnimation;
 }
 
+function parseTargetAttention(value: unknown): GuideTargetAttention | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return undefined;
+  if (normalized === "none" || normalized === "off") return "none";
+  if (normalized === "pulse" || normalized === "throb") return "pulse";
+  if (normalized === "border-pulse" || normalized === "borderpulse") return "border-pulse";
+  if (normalized === "bounce" || normalized === "jump") return "bounce";
+  if (normalized === "glow" || normalized === "shine") return "glow";
+  return normalized as GuideTargetAttention;
+}
+
 function parseStepPillPosition(value: unknown): GuideStepPillPosition | undefined {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim().toLowerCase();
@@ -260,6 +273,16 @@ function parsePrimaryAction(value: unknown): GuidePrimaryAction | undefined {
   if (normalized === "continue" || normalized === "forward") return "next";
   if (normalized === "bypass") return "skip";
   return normalized as GuidePrimaryAction;
+}
+
+function parseButtonOrder(value: unknown): GuidePrimaryAction[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const valid: GuidePrimaryAction[] = [];
+  for (const item of value) {
+    const parsed = parsePrimaryAction(item);
+    if (parsed) valid.push(parsed);
+  }
+  return valid.length > 0 ? valid : undefined;
 }
 
 function parseTextTransform(value: unknown): GuideTextTransform | undefined {
@@ -380,6 +403,10 @@ function parseActions(raw: Record<string, unknown>): GuideActions | undefined {
         raw.primaryAction ??
         raw.primaryButton
     ),
+    buttonOrder: parseButtonOrder(nested.buttonOrder ?? raw.buttonOrder),
+    showSkipTour:
+      toOptionalBoolean(nested.showSkipTour) ??
+      toOptionalBoolean(raw.showSkipTour),
   };
 
   if (Object.values(actions).every((value) => typeof value === "undefined")) {
@@ -406,6 +433,7 @@ function parseI18n(raw: Record<string, unknown>): GuideI18n | undefined {
     followTargetMessage: toOptionalTrimmedString(raw.followTargetMessage),
     requireClickMessage: toOptionalTrimmedString(raw.requireClickMessage),
     requireInputMessage: toOptionalTrimmedString(raw.requireInputMessage),
+    skipTourButtonLabel: toOptionalTrimmedString(raw.skipTourButtonLabel),
     clickHighlightedMessage: toOptionalTrimmedString(raw.clickHighlightedMessage),
     autoAdvanceMessage: toOptionalTrimmedString(raw.autoAdvanceMessage),
     completedTitleTemplate: toOptionalTrimmedString(raw.completedTitleTemplate),
@@ -430,7 +458,12 @@ function parseTheme(raw: Record<string, unknown>): GuideTheme | undefined {
     tooltipBorderRadius: toOptionalNumber(raw.tooltipBorderRadius),
     tooltipShadow: toOptionalTrimmedString(raw.tooltipShadow),
     titleColor: toOptionalTrimmedString(raw.titleColor),
+    titleFontFamily: toOptionalTrimmedString(raw.titleFontFamily),
+    titleFontWeight: toOptionalNumber(raw.titleFontWeight),
+    titleFontSize: toOptionalNumber(raw.titleFontSize),
     descriptionColor: toOptionalTrimmedString(raw.descriptionColor),
+    descriptionFontFamily: toOptionalTrimmedString(raw.descriptionFontFamily),
+    descriptionFontWeight: toOptionalNumber(raw.descriptionFontWeight),
     hintColor: toOptionalTrimmedString(raw.hintColor),
     warningColor: toOptionalTrimmedString(raw.warningColor),
     stepPillBackgroundColor: toOptionalTrimmedString(raw.stepPillBackgroundColor),
@@ -449,6 +482,16 @@ function parseTheme(raw: Record<string, unknown>): GuideTheme | undefined {
     ghostButtonBackgroundColor: toOptionalTrimmedString(raw.ghostButtonBackgroundColor),
     ghostButtonTextColor: toOptionalTrimmedString(raw.ghostButtonTextColor),
     ghostButtonBorderColor: toOptionalTrimmedString(raw.ghostButtonBorderColor),
+    ghostButtonHoverBackgroundColor: toOptionalTrimmedString(raw.ghostButtonHoverBackgroundColor),
+    buttonFontWeight: toOptionalNumber(raw.buttonFontWeight),
+    buttonFontFamily: toOptionalTrimmedString(raw.buttonFontFamily),
+    buttonFontSize: toOptionalNumber(raw.buttonFontSize),
+    buttonBorderRadius: toOptionalNumber(raw.buttonBorderRadius),
+    buttonMinHeight: toOptionalNumber(raw.buttonMinHeight),
+    buttonPaddingX: toOptionalNumber(raw.buttonPaddingX),
+    buttonPaddingY: toOptionalNumber(raw.buttonPaddingY),
+    disabledButtonBackgroundColor: toOptionalTrimmedString(raw.disabledButtonBackgroundColor),
+    disabledButtonTextColor: toOptionalTrimmedString(raw.disabledButtonTextColor),
     timerTrackColor: toOptionalTrimmedString(raw.timerTrackColor),
     timerFillColor: toOptionalTrimmedString(raw.timerFillColor),
   };
@@ -560,6 +603,8 @@ function buildMetaFromRaw(raw: Record<string, unknown>): GuideMeta {
     tooltipPlacement: parseTooltipPlacement(
       raw.tooltipPlacement ?? raw.tooltipPosition
     ),
+    tooltipOffsetX: typeof raw.tooltipOffsetX === "number" ? raw.tooltipOffsetX : undefined,
+    tooltipOffsetY: typeof raw.tooltipOffsetY === "number" ? raw.tooltipOffsetY : undefined,
     overlayColor: toOptionalTrimmedString(raw.overlayColor),
     highlightColor: toOptionalTrimmedString(raw.highlightColor),
     highlightPadding: parseHighlightPadding(raw.highlightPadding ?? raw.highlightInset),
@@ -631,6 +676,8 @@ function parseStep(
     tooltipPlacement: parseTooltipPlacement(
       parsed.tooltipPlacement ?? parsed.tooltipPosition
     ),
+    tooltipOffsetX: typeof parsed.tooltipOffsetX === "number" ? parsed.tooltipOffsetX : undefined,
+    tooltipOffsetY: typeof parsed.tooltipOffsetY === "number" ? parsed.tooltipOffsetY : undefined,
     allowSkip:
       typeof parsed.allowSkip === "boolean" ? parsed.allowSkip : undefined,
     skippable:
@@ -667,6 +714,9 @@ function parseStep(
       typeof parsed.overlayLock === "boolean" ? parsed.overlayLock : undefined,
     showFollowHint:
       typeof parsed.showFollowHint === "boolean" ? parsed.showFollowHint : undefined,
+    targetInteractive:
+      typeof parsed.targetInteractive === "boolean" ? parsed.targetInteractive : undefined,
+    targetAttention: parseTargetAttention(parsed.targetAttention),
     i18n,
     pills,
     actions,

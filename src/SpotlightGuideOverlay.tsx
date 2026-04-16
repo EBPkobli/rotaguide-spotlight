@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type {
   GuideActions,
@@ -104,6 +104,7 @@ interface GuideTextSet {
   followTargetMessage: string;
   requireClickMessage: string;
   requireInputMessage: string;
+  skipTourButtonLabel: string;
   clickHighlightedMessage: string;
   autoAdvanceMessage: string;
   completedTitleTemplate: string;
@@ -118,7 +119,12 @@ type TooltipStyleVars = CSSProperties & {
   "--msgt-tooltip-border-radius"?: string;
   "--msgt-tooltip-shadow"?: string;
   "--msgt-title-color"?: string;
+  "--msgt-title-font-family"?: string;
+  "--msgt-title-font-weight"?: string;
+  "--msgt-title-font-size"?: string;
   "--msgt-description-color"?: string;
+  "--msgt-description-font-family"?: string;
+  "--msgt-description-font-weight"?: string;
   "--msgt-hint-color"?: string;
   "--msgt-warning-color"?: string;
   "--msgt-pill-step-bg"?: string;
@@ -137,6 +143,17 @@ type TooltipStyleVars = CSSProperties & {
   "--msgt-btn-ghost-bg"?: string;
   "--msgt-btn-ghost-text"?: string;
   "--msgt-btn-ghost-border"?: string;
+  "--msgt-btn-ghost-hover-bg"?: string;
+  "--msgt-btn-font-weight"?: string;
+  "--msgt-btn-font-family"?: string;
+  "--msgt-btn-font-size"?: string;
+  "--msgt-btn-border-radius"?: string;
+  "--msgt-btn-min-height"?: string;
+  "--msgt-btn-padding-x"?: string;
+  "--msgt-btn-padding-y"?: string;
+  "--msgt-btn-disabled-bg"?: string;
+  "--msgt-btn-disabled-text"?: string;
+  "--msgt-btn-disabled-border"?: string;
   "--msgt-timer-track-bg"?: string;
   "--msgt-timer-fill-bg"?: string;
 };
@@ -153,6 +170,7 @@ const GUIDE_TEXTS_EN: GuideTextSet = {
   followTargetMessage: "Follow the target element to continue.",
   requireClickMessage: "This step requires clicking the target area.",
   requireInputMessage: "This step requires entering a value in the target input.",
+  skipTourButtonLabel: "Skip tour",
   clickHighlightedMessage: "Click the highlighted area to continue.",
   autoAdvanceMessage: "Auto advancing in {seconds}s",
   completedTitleTemplate: "{title} completed",
@@ -171,6 +189,7 @@ const GUIDE_TEXTS_TR: GuideTextSet = {
   followTargetMessage: "Devam etmek için hedef elementi takip et.",
   requireClickMessage: "Bu adımda hedef alana tıklanması zorunludur.",
   requireInputMessage: "Bu adımda hedef alana değer girilmesi zorunludur.",
+  skipTourButtonLabel: "Turu geç",
   clickHighlightedMessage: "Devam etmek için vurgulu alana tıkla.",
   autoAdvanceMessage: "{seconds}s içinde otomatik ilerleniyor",
   completedTitleTemplate: "{title} tamamlandı",
@@ -189,6 +208,7 @@ const GUIDE_TEXTS_DA: GuideTextSet = {
   followTargetMessage: "Følg mål-elementet for at fortsætte.",
   requireClickMessage: "Dette trin kræver klik på målområdet.",
   requireInputMessage: "Dette trin kræver, at du indtaster en værdi i målfeltet.",
+  skipTourButtonLabel: "Spring tur over",
   clickHighlightedMessage: "Klik på det fremhævede område for at fortsætte.",
   autoAdvanceMessage: "Fortsætter automatisk om {seconds}s",
   completedTitleTemplate: "{title} fuldført",
@@ -256,6 +276,10 @@ function resolveGuideTexts(metaI18n?: GuideI18n, stepI18n?: GuideI18n): GuideTex
       stepI18n?.requireInputMessage ??
       metaI18n?.requireInputMessage ??
       base.requireInputMessage,
+    skipTourButtonLabel:
+      stepI18n?.skipTourButtonLabel ??
+      metaI18n?.skipTourButtonLabel ??
+      base.skipTourButtonLabel,
     clickHighlightedMessage:
       stepI18n?.clickHighlightedMessage ??
       metaI18n?.clickHighlightedMessage ??
@@ -290,10 +314,15 @@ function resolvePills(metaPills?: GuidePills, stepPills?: GuidePills): GuidePill
 }
 
 function resolveActions(metaActions?: GuideActions, stepActions?: GuideActions): GuideActions {
-  return {
-    ...(metaActions ?? {}),
-    ...(stepActions ?? {}),
-  };
+  const merged = { ...(metaActions ?? {}) };
+  if (stepActions) {
+    for (const [key, value] of Object.entries(stepActions)) {
+      if (value !== undefined) {
+        (merged as Record<string, unknown>)[key] = value;
+      }
+    }
+  }
+  return merged;
 }
 
 function isUiToggleEnabled(value: boolean | undefined): boolean {
@@ -411,7 +440,12 @@ function buildTooltipStyleVars(theme: GuideTheme): TooltipStyleVars {
   }
   if (theme.tooltipShadow) vars["--msgt-tooltip-shadow"] = theme.tooltipShadow;
   if (theme.titleColor) vars["--msgt-title-color"] = theme.titleColor;
+  if (theme.titleFontFamily) vars["--msgt-title-font-family"] = theme.titleFontFamily;
+  if (theme.titleFontWeight != null) vars["--msgt-title-font-weight"] = `${theme.titleFontWeight}`;
+  if (theme.titleFontSize != null) vars["--msgt-title-font-size"] = `${theme.titleFontSize}px`;
   if (theme.descriptionColor) vars["--msgt-description-color"] = theme.descriptionColor;
+  if (theme.descriptionFontFamily) vars["--msgt-description-font-family"] = theme.descriptionFontFamily;
+  if (theme.descriptionFontWeight != null) vars["--msgt-description-font-weight"] = `${theme.descriptionFontWeight}`;
   if (theme.hintColor) vars["--msgt-hint-color"] = theme.hintColor;
   if (theme.warningColor) vars["--msgt-warning-color"] = theme.warningColor;
   if (theme.stepPillBackgroundColor) vars["--msgt-pill-step-bg"] = theme.stepPillBackgroundColor;
@@ -442,6 +476,17 @@ function buildTooltipStyleVars(theme: GuideTheme): TooltipStyleVars {
   if (theme.ghostButtonBackgroundColor) vars["--msgt-btn-ghost-bg"] = theme.ghostButtonBackgroundColor;
   if (theme.ghostButtonTextColor) vars["--msgt-btn-ghost-text"] = theme.ghostButtonTextColor;
   if (theme.ghostButtonBorderColor) vars["--msgt-btn-ghost-border"] = theme.ghostButtonBorderColor;
+  if (theme.ghostButtonHoverBackgroundColor) vars["--msgt-btn-ghost-hover-bg"] = theme.ghostButtonHoverBackgroundColor;
+  if (theme.buttonFontWeight != null) vars["--msgt-btn-font-weight"] = `${theme.buttonFontWeight}`;
+  if (theme.buttonFontFamily) vars["--msgt-btn-font-family"] = theme.buttonFontFamily;
+  if (theme.buttonFontSize != null) vars["--msgt-btn-font-size"] = `${theme.buttonFontSize}px`;
+  if (theme.buttonBorderRadius != null) vars["--msgt-btn-border-radius"] = `${theme.buttonBorderRadius}px`;
+  if (theme.buttonMinHeight != null) vars["--msgt-btn-min-height"] = `${theme.buttonMinHeight}px`;
+  if (theme.buttonPaddingX != null) vars["--msgt-btn-padding-x"] = `${theme.buttonPaddingX}px`;
+  if (theme.buttonPaddingY != null) vars["--msgt-btn-padding-y"] = `${theme.buttonPaddingY}px`;
+  if (theme.disabledButtonBackgroundColor) vars["--msgt-btn-disabled-bg"] = theme.disabledButtonBackgroundColor;
+  if (theme.disabledButtonTextColor) vars["--msgt-btn-disabled-text"] = theme.disabledButtonTextColor;
+  if (theme.disabledButtonBackgroundColor) vars["--msgt-btn-disabled-border"] = theme.disabledButtonBackgroundColor;
   if (theme.timerTrackColor) vars["--msgt-timer-track-bg"] = theme.timerTrackColor;
   if (theme.timerFillColor) vars["--msgt-timer-fill-bg"] = theme.timerFillColor;
   return vars;
@@ -646,6 +691,7 @@ export function SpotlightGuideOverlay({
   const [autoAdvanceProgress, setAutoAdvanceProgress] = useState<number | null>(null);
   const [tooltipSize, setTooltipSize] = useState({ width: DEFAULT_TOOLTIP_WIDTH, height: DEFAULT_TOOLTIP_HEIGHT });
   const [showConfetti, setShowConfetti] = useState(false);
+  const [requirementSatisfied, setRequirementSatisfied] = useState(false);
 
   const activeTargetsRef = useRef<HTMLElement[]>([]);
   const lastFocusedStepRef = useRef<string>("");
@@ -658,9 +704,20 @@ export function SpotlightGuideOverlay({
   );
   const tooltipRef = useRef<HTMLDivElement | null>(null);
 
+  const ATTENTION_CLASSES = [
+    "msgt-guide-target-attention-pulse",
+    "msgt-guide-target-attention-border-pulse",
+    "msgt-guide-target-attention-bounce",
+    "msgt-guide-target-attention-glow",
+  ];
+
   const clearActiveTargets = useCallback(() => {
     activeTargetsRef.current.forEach((target) => {
-      target.classList.remove("msgt-guide-target-active");
+      target.classList.remove(
+        "msgt-guide-target-active",
+        "msgt-guide-target-inactive",
+        ...ATTENTION_CLASSES,
+      );
     });
     activeTargetsRef.current = [];
   }, []);
@@ -788,6 +845,13 @@ export function SpotlightGuideOverlay({
 
     x = clamp(x, TOOLTIP_MARGIN_PX, viewport.width - tipWidth - TOOLTIP_MARGIN_PX);
     y = clamp(y, TOOLTIP_MARGIN_PX, viewport.height - tipHeight - TOOLTIP_MARGIN_PX);
+
+    // Apply per-step or meta offset
+    const ox = currentStep?.tooltipOffsetX ?? guide.meta.tooltipOffsetX ?? 0;
+    const oy = currentStep?.tooltipOffsetY ?? guide.meta.tooltipOffsetY ?? 0;
+    x = clamp(x + ox, TOOLTIP_MARGIN_PX, viewport.width - tipWidth - TOOLTIP_MARGIN_PX);
+    y = clamp(y + oy, TOOLTIP_MARGIN_PX, viewport.height - tipHeight - TOOLTIP_MARGIN_PX);
+
     return { left: x, top: y };
   }, [
     finished,
@@ -797,6 +861,10 @@ export function SpotlightGuideOverlay({
     tooltipPlacement,
     tooltipSize.height,
     tooltipSize.width,
+    currentStep?.tooltipOffsetX,
+    currentStep?.tooltipOffsetY,
+    guide.meta.tooltipOffsetX,
+    guide.meta.tooltipOffsetY,
   ]);
 
   // Track close reason for lifecycle hooks
@@ -819,6 +887,7 @@ export function SpotlightGuideOverlay({
     setManualPos(null);
     setDragOffset(null);
     setAutoAdvanceProgress(null);
+    setRequirementSatisfied(false);
     clickedTargetRef.current = false;
     lastStepPosRef.current = null;
     setShowConfetti(false);
@@ -936,6 +1005,7 @@ export function SpotlightGuideOverlay({
     clickedTargetRef.current = false;
     lastAdvancedStepRef.current = "";
     setAutoAdvanceProgress(null);
+    setRequirementSatisfied(false);
     // When transitioning to finished, keep the last tooltip position
     if (finished) {
       return;
@@ -1022,15 +1092,39 @@ export function SpotlightGuideOverlay({
 
       const nextSet = new Set(targets);
       const activeSet = new Set(activeTargetsRef.current);
+      const isInteractive = currentStep.targetInteractive !== false;
+      const attention = currentStep.targetAttention;
+      const attentionClass = attention && attention !== "none"
+        ? `msgt-guide-target-attention-${attention}`
+        : null;
+
       activeTargetsRef.current.forEach((target) => {
         if (!nextSet.has(target)) {
-          target.classList.remove("msgt-guide-target-active");
+          target.classList.remove(
+            "msgt-guide-target-active",
+            "msgt-guide-target-inactive",
+            ...ATTENTION_CLASSES,
+          );
         }
       });
       targets.forEach((target) => {
         if (!activeSet.has(target)) {
           target.classList.add("msgt-guide-target-active");
         }
+        // Toggle interactive/inactive
+        if (!isInteractive) {
+          target.classList.add("msgt-guide-target-inactive");
+        } else {
+          target.classList.remove("msgt-guide-target-inactive");
+        }
+        // Toggle attention animation
+        ATTENTION_CLASSES.forEach((cls) => {
+          if (cls === attentionClass) {
+            target.classList.add(cls);
+          } else {
+            target.classList.remove(cls);
+          }
+        });
       });
       activeTargetsRef.current = targets;
 
@@ -1098,6 +1192,8 @@ export function SpotlightGuideOverlay({
       typeof currentStep.autoAdvanceMs === "number" ? currentStep.autoAdvanceMs : 0;
     const getTargets = () => resolveVisibleTargets(currentStep, ext);
 
+    const nextExplicitlyShown = resolvedActions.showNext === true;
+
     const onClickCapture = (event: MouseEvent) => {
       const targets = getTargets();
       if (targets.length === 0) return;
@@ -1105,13 +1201,14 @@ export function SpotlightGuideOverlay({
       const node = event.target as Node | null;
       if (node && targets.some((target) => target.contains(node))) {
         clickedTargetRef.current = true;
-        if (mode === "click") {
+        setRequirementSatisfied(true);
+        if (mode === "click" && !nextExplicitlyShown) {
           attemptAdvance();
         }
         return;
       }
 
-      if (mode === "click") {
+      if (mode === "click" && !nextExplicitlyShown) {
         setHint(resolvedTexts.clickHighlightedMessage);
       }
     };
@@ -1125,15 +1222,21 @@ export function SpotlightGuideOverlay({
       if (!node || !targets.some((target) => target.contains(node))) return;
 
       if (mode === "change") {
-        if (targetListHasInputValue(targets) || !requirements.requireInput) {
-          attemptAdvance();
+        setRequirementSatisfied(true);
+        if (!nextExplicitlyShown) {
+          if (targetListHasInputValue(targets) || !requirements.requireInput) {
+            attemptAdvance();
+          }
         }
         return;
       }
 
       if (mode === "input-idle" && node instanceof HTMLSelectElement) {
-        if (targetListHasInputValue(targets) || !requirements.requireInput) {
-          attemptAdvance();
+        setRequirementSatisfied(true);
+        if (!nextExplicitlyShown) {
+          if (targetListHasInputValue(targets) || !requirements.requireInput) {
+            attemptAdvance();
+          }
         }
       }
     };
@@ -1211,7 +1314,7 @@ export function SpotlightGuideOverlay({
         window.clearInterval(autoAdvanceProgressIntervalId);
       }
     };
-  }, [attemptAdvance, currentStep, finished, mode, open, resolvedTexts.clickHighlightedMessage]);
+  }, [attemptAdvance, currentStep, finished, mode, open, resolvedActions, resolvedTexts.clickHighlightedMessage]);
 
   // Track the tooltip position on every non-finished render so we have it
   // available synchronously when the guide finishes.
@@ -1239,11 +1342,20 @@ export function SpotlightGuideOverlay({
   const canSkip = Boolean(currentStep && isStepSkippable(currentStep));
   const showStepProgressPill = Boolean(currentStep && isUiToggleEnabled(resolvedPills.showStepProgress));
   const showKindPill = Boolean(currentStep && isUiToggleEnabled(resolvedPills.showKind));
-  const showCloseButton = Boolean(currentStep && isUiToggleEnabled(resolvedActions.showClose));
+  const showCloseButton = Boolean(currentStep && isUiToggleEnabled(resolvedActions.showClose) && resolvedActions.showSkipTour !== true);
   const showBackButton = Boolean(currentStep && isUiToggleEnabled(resolvedActions.showBack));
-  const showNextButton = Boolean(currentStep && isUiToggleEnabled(resolvedActions.showNext));
+  const nextExplicitlyHidden = currentStep ? resolvedActions.showNext === false : false;
   const showSkipButton = Boolean(
-    currentStep && canSkip && isUiToggleEnabled(resolvedActions.showSkip)
+    currentStep && canSkip && resolvedActions.showSkip === true
+  );
+  const showSkipTourButton = Boolean(
+    currentStep && resolvedActions.showSkipTour === true
+  );
+  const nextRequirementsPending = Boolean(
+    currentStep &&
+      !requirementSatisfied &&
+      ((mode === "click" && resolveStepRequirements(currentStep, mode).requireClick) ||
+       (mode === "change" && resolvedActions.showNext === true && resolveStepRequirements(currentStep, mode).requireInput))
   );
   const actionButtons: TooltipActionButton[] = [];
   if (showBackButton) {
@@ -1267,16 +1379,22 @@ export function SpotlightGuideOverlay({
       },
     });
   }
-  if (showNextButton) {
+  if (currentStep) {
     actionButtons.push({
       key: "next",
       label: resolvedTexts.nextButtonLabel,
+      disabled: nextExplicitlyHidden || nextRequirementsPending,
       onClick: attemptAdvance,
     });
   }
   const primaryAction = resolvePrimaryAction(resolvedActions.primaryAction, actionButtons);
-  const orderedActionButtons =
-    primaryAction === null
+  const buttonOrder = resolvedActions.buttonOrder;
+  const orderedActionButtons = buttonOrder
+    ? buttonOrder
+        .map((key) => actionButtons.find((b) => b.key === key))
+        .filter((b): b is TooltipActionButton => b != null)
+        .concat(actionButtons.filter((b) => !buttonOrder.includes(b.key)))
+    : primaryAction === null
       ? actionButtons
       : [
           ...actionButtons.filter((action) => action.key !== primaryAction),
@@ -1449,12 +1567,43 @@ export function SpotlightGuideOverlay({
             const highlightStrokeRectWidth = Math.max(0, rect.width - HIGHLIGHT_STROKE_WIDTH_PX);
             const highlightStrokeRectHeight = Math.max(0, rect.height - HIGHLIGHT_STROKE_WIDTH_PX);
 
+            const innerLeft = targetRects[index]
+              ? targetRects[index].left - rect.left
+              : highlightPadding;
+            const innerTop = targetRects[index]
+              ? targetRects[index].top - rect.top
+              : highlightPadding;
+            const innerW = targetRects[index]
+              ? targetRects[index].width
+              : Math.max(0, rect.width - highlightPadding * 2);
+            const innerH = targetRects[index]
+              ? targetRects[index].height
+              : Math.max(0, rect.height - highlightPadding * 2);
+            const innerRight = innerLeft + innerW;
+            const innerBottom = innerTop + innerH;
+            const innerBr = Math.max(0, highlightBorderRadius - highlightPadding);
+
+            const showFill = highlightPadding > 0 && rect.width > 0 && rect.height > 0;
+
             return (
-              <svg
-                key={`stroke-${index}`}
-                className="msgt-highlight-stroke"
-                style={{
-                  left: `${rect.left}px`,
+              <Fragment key={`highlight-${index}`}>
+                {showFill && (
+                  <div
+                    className="msgt-highlight-fill"
+                    style={{
+                      left: `${rect.left}px`,
+                      top: `${rect.top}px`,
+                      width: `${rect.width}px`,
+                      height: `${rect.height}px`,
+                      borderRadius: `${highlightBorderRadius}px`,
+                      clipPath: `path(evenodd, "M 0 ${highlightBorderRadius} Q 0 0 ${highlightBorderRadius} 0 L ${rect.width - highlightBorderRadius} 0 Q ${rect.width} 0 ${rect.width} ${highlightBorderRadius} L ${rect.width} ${rect.height - highlightBorderRadius} Q ${rect.width} ${rect.height} ${rect.width - highlightBorderRadius} ${rect.height} L ${highlightBorderRadius} ${rect.height} Q 0 ${rect.height} 0 ${rect.height - highlightBorderRadius} Z M ${innerLeft} ${innerTop + innerBr} Q ${innerLeft} ${innerTop} ${innerLeft + innerBr} ${innerTop} L ${innerRight - innerBr} ${innerTop} Q ${innerRight} ${innerTop} ${innerRight} ${innerTop + innerBr} L ${innerRight} ${innerBottom - innerBr} Q ${innerRight} ${innerBottom} ${innerRight - innerBr} ${innerBottom} L ${innerLeft + innerBr} ${innerBottom} Q ${innerLeft} ${innerBottom} ${innerLeft} ${innerBottom - innerBr} Z")`,
+                    }}
+                  />
+                )}
+                <svg
+                  className="msgt-highlight-stroke"
+                  style={{
+                    left: `${rect.left}px`,
                   top: `${rect.top}px`,
                   width: `${rect.width}px`,
                   height: `${rect.height}px`,
@@ -1474,6 +1623,7 @@ export function SpotlightGuideOverlay({
                   style={{ color: highlightColor, stroke: highlightColor }}
                 />
               </svg>
+              </Fragment>
             );
           })}
         </>
@@ -1590,13 +1740,22 @@ export function SpotlightGuideOverlay({
                 </div>
               )}
 
-              {hasActionButtons && (
+              {(hasActionButtons || showSkipTourButton) && (
                 <div className="msgt-tooltip-actions">
+                  {showSkipTourButton && (
+                    <button
+                      type="button"
+                      className="msgt-btn-skip-tour"
+                      onClick={() => handleClose("user")}
+                    >
+                      {resolvedTexts.skipTourButtonLabel}
+                    </button>
+                  )}
                   {orderedActionButtons.map((action) => (
                     <button
                       key={action.key}
                       type="button"
-                      className={`msgt-btn ${
+                      className={`msgt-btn msgt-btn--${action.key} ${
                         primaryAction === action.key ? "msgt-btn-primary" : "msgt-btn-ghost"
                       }`}
                       disabled={action.disabled}

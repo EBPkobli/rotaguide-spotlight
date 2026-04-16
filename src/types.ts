@@ -25,6 +25,14 @@ export const GUIDE_TEXT_TRANSFORMS = [
   "lowercase",
   "capitalize",
 ] as const;
+export const GUIDE_TARGET_ATTENTIONS = [
+  "none",
+  "pulse",
+  "border-pulse",
+  "bounce",
+  "glow",
+] as const;
+
 export const GUIDE_TOOLTIP_PLACEMENTS = [
   "auto",
   "top",
@@ -52,6 +60,7 @@ export type GuideHighlightAnimation = (typeof GUIDE_HIGHLIGHT_ANIMATIONS)[number
 export type GuidePrimaryAction = (typeof GUIDE_PRIMARY_ACTIONS)[number];
 export type GuideStepPillPosition = (typeof GUIDE_STEP_PILL_POSITIONS)[number];
 export type GuideTextTransform = (typeof GUIDE_TEXT_TRANSFORMS)[number];
+export type GuideTargetAttention = (typeof GUIDE_TARGET_ATTENTIONS)[number];
 export type GuideTooltipPlacement = (typeof GUIDE_TOOLTIP_PLACEMENTS)[number];
 export type GuideTooltipTemplate = (typeof GUIDE_TOOLTIP_TEMPLATES)[number];
 
@@ -67,6 +76,8 @@ export interface GuideActions {
   showNext?: boolean;
   showSkip?: boolean;
   primaryAction?: GuidePrimaryAction;
+  buttonOrder?: GuidePrimaryAction[];
+  showSkipTour?: boolean;
 }
 
 export interface GuideI18n {
@@ -82,6 +93,7 @@ export interface GuideI18n {
   followTargetMessage?: string;
   requireClickMessage?: string;
   requireInputMessage?: string;
+  skipTourButtonLabel?: string;
   clickHighlightedMessage?: string;
   autoAdvanceMessage?: string; // Example: "Auto advancing in {seconds}s"
   completedTitleTemplate?: string; // Example: "{title} completed"
@@ -97,7 +109,12 @@ export interface GuideTheme {
   tooltipBorderRadius?: number;
   tooltipShadow?: string;
   titleColor?: string;
+  titleFontFamily?: string;
+  titleFontWeight?: number;
+  titleFontSize?: number;
   descriptionColor?: string;
+  descriptionFontFamily?: string;
+  descriptionFontWeight?: number;
   hintColor?: string;
   warningColor?: string;
   stepPillBackgroundColor?: string;
@@ -116,6 +133,16 @@ export interface GuideTheme {
   ghostButtonBackgroundColor?: string;
   ghostButtonTextColor?: string;
   ghostButtonBorderColor?: string;
+  ghostButtonHoverBackgroundColor?: string;
+  buttonFontWeight?: number;
+  buttonFontFamily?: string;
+  buttonFontSize?: number;
+  buttonBorderRadius?: number;
+  buttonMinHeight?: number;
+  buttonPaddingX?: number;
+  buttonPaddingY?: number;
+  disabledButtonBackgroundColor?: string;
+  disabledButtonTextColor?: string;
   timerTrackColor?: string;
   timerFillColor?: string;
 }
@@ -126,6 +153,8 @@ export interface GuideMeta {
   buttonLabel?: string;
   tooltipTitle?: string;
   tooltipPlacement?: GuideTooltipPlacement;
+  tooltipOffsetX?: number;
+  tooltipOffsetY?: number;
   overlayColor?: string;
   highlightColor?: string;
   highlightPadding?: number;
@@ -153,6 +182,8 @@ export interface GuideStep {
   kind: GuideKind;
   description: string;
   tooltipPlacement?: GuideTooltipPlacement;
+  tooltipOffsetX?: number;
+  tooltipOffsetY?: number;
   allowSkip?: boolean;
   skippable?: boolean;
   advanceOn?: GuideAdvanceMode;
@@ -171,6 +202,8 @@ export interface GuideStep {
   mustEnterValue?: boolean;
   overlayLock?: boolean;
   showFollowHint?: boolean;
+  targetInteractive?: boolean;
+  targetAttention?: GuideTargetAttention;
   i18n?: GuideI18n;
   pills?: GuidePills;
   actions?: GuideActions;
