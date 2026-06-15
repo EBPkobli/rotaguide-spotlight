@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.0 - 2026-06-15
+
+### Added
+- **Feature-based guide filtering** — Steps can now declare `featureId`, `featureIds`, and `tags`. `MarkdownGuideButton` and `MarkdownGuideTrigger` can launch only matching steps with `featureIds`, `tags`, `stepIds`, and `featureMode`.
+- **Feature release notes popup** — New `FeatureReleaseNotes` component shows one-time release/change-log announcements and can launch feature-specific guide steps from each entry.
+- **Required update flow** — Release note items can be marked `required`; dismissal can be blocked until required updates are viewed or acknowledged.
+- **Themed release note entries** — Release note popups now accept header/item icons and per-item accent colors for branded change-log experiences.
+- **Feature guide helpers** — Exported `filterGuideByFeatures`, `createFeatureGuideExtension`, `getGuideStepFeatureIds`, and `getGuideStepTags`.
+
+### Changed
+- Guide metadata now supports long-lived full tours and short feature tours from the same guide content.
+
 ## 1.3.0 - 2026-04-16
 
 ### Added

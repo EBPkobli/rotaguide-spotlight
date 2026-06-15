@@ -6,6 +6,12 @@ export type {
   MarkdownGuideTriggerProps,
   MarkdownGuideTriggerRenderParams,
 } from "./MarkdownGuideTrigger";
+export { FeatureReleaseNotes } from "./FeatureReleaseNotes";
+export type {
+  FeatureReleaseNoteItem,
+  FeatureReleaseNotesDismissEvent,
+  FeatureReleaseNotesProps,
+} from "./FeatureReleaseNotes";
 
 export { SpotlightGuideOverlay } from "./SpotlightGuideOverlay";
 export type { SpotlightGuideOverlayProps } from "./SpotlightGuideOverlay";
@@ -18,6 +24,18 @@ export {
 } from "./parser";
 export { GuideParseError, formatGuideIssues } from "./errors";
 export { guideTarget } from "./helpers";
+
+export {
+  createFeatureGuideExtension,
+  filterGuideByFeatures,
+  getGuideStepFeatureIds,
+  getGuideStepTags,
+} from "./featureGuides";
+export type {
+  GuideFeatureFilterOptions,
+  GuideFeatureInput,
+  GuideFeatureMatchMode,
+} from "./featureGuides";
 
 // --- Extension system ---
 export {

@@ -50,6 +50,44 @@ import { MarkdownGuideTrigger } from "rotaguide-spotlight";
 </MarkdownGuideTrigger>
 ```
 
+### Release notes with feature guides
+
+`FeatureReleaseNotes` opens a one-time change log popup for a release. Entries can be informational only, or they can launch only the guide steps that match their `featureIds`, `tags`, or `stepIds`.
+
+```tsx
+import { FeatureReleaseNotes } from "rotaguide-spotlight";
+import { Activity, Sparkles } from "lucide-react";
+
+<FeatureReleaseNotes
+  id="release-2026-06-vessel-signals"
+  title="What's new"
+  eyebrow="Pulse update"
+  headerIcon={<Sparkles aria-hidden="true" />}
+  content={guideContent}
+  items={[
+    {
+      id: "progress",
+      title: "Overall Milestone Progress",
+      description: "See vessel progress directly on the tile.",
+      icon: <Activity aria-hidden="true" />,
+      accentColor: "#1A63F5",
+      accentBackgroundColor: "#D1EBFF",
+      featureIds: "vessel-tile-progress",
+      required: true,
+    },
+    {
+      id: "exceptions",
+      title: "Operational Exception Indicator",
+      description: "Open only the steps that explain the exception symbol.",
+      featureIds: "vessel-operational-exceptions",
+    },
+  ]}
+/>
+```
+
+Use a new `id` for every new release. Use `storageKey` when the dismissed state should be scoped to a specific user or tenant.
+Use `headerIcon`, item `icon`, `accentColor`, and `accentBackgroundColor` when the popup should visually match your product theme.
+
 ## 2. Markdown Structure
 
 Your markdown can include optional frontmatter, then one or more step sections.
@@ -118,6 +156,9 @@ description: Click Open to continue.
 | Field | Type | Default | Notes |
 |---|---|---|---|
 | `targets` | `string[]` | - | Extra spotlight targets — all listed elements are highlighted simultaneously. Tooltip anchors to the first resolved target. Aliases: `targetIds`, `componentIds`, `components`, `componentId`. Also accepts comma-separated string. |
+| `featureId` | `string` | - | Primary feature identifier for feature-based mini guides. Alias: `feature`. |
+| `featureIds` | `string[]` | - | Additional feature identifiers. Aliases: `features`, `featureKey`, `featureKeys`. Also accepts comma-separated string. |
+| `tags` | `string[]` | - | Optional labels that can be used to filter feature guides. |
 | `skippable` | `boolean` | `true` | Preferred skip field |
 | `allowSkip` | `boolean` | - | Legacy alias of `skippable` |
 | `advanceOn` | `auto \| click \| change \| input-idle \| none` | `auto` | Controls step completion mode |
@@ -175,6 +216,8 @@ targets:
 
 ### Alias and Normalization Rules
 
+- `feature`, `featureId`, `featureKey`, `features`, `featureIds`, and `featureKeys` are normalized to step feature identifiers.
+- `tag` and `tags` are normalized to step tags.
 - `tooltipPosition` is normalized to `tooltipPlacement`.
 - `tooltipVariant` and `template` are normalized to `tooltipTemplate`.
 - `durationMs` and `timeoutMs` are normalized to `autoAdvanceMs`.

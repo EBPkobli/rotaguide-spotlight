@@ -1,5 +1,10 @@
 import { useCallback, useMemo, useState, type CSSProperties, type JSX, type ReactNode } from "react";
 import { formatGuideIssues } from "./errors";
+import {
+  filterGuideByFeatures,
+  type GuideFeatureInput,
+  type GuideFeatureMatchMode,
+} from "./featureGuides";
 import { parseGuideContentSafe } from "./parser";
 import { SpotlightGuideOverlay } from "./SpotlightGuideOverlay";
 import type { GuideDefinition, GuideIssue, GuideSourceFormat } from "./types";
@@ -31,6 +36,10 @@ export interface MarkdownGuideTriggerProps {
   style?: CSSProperties;
   disabled?: boolean;
   overlayZIndex?: number;
+  featureIds?: GuideFeatureInput;
+  tags?: GuideFeatureInput;
+  stepIds?: GuideFeatureInput;
+  featureMode?: GuideFeatureMatchMode;
   children: ReactNode | ((params: MarkdownGuideTriggerRenderParams) => ReactNode);
   onGuideStart?: (guide: GuideDefinition) => void;
   onGuideClose?: () => void;
@@ -53,6 +62,10 @@ export function MarkdownGuideTrigger({
   style,
   disabled = false,
   overlayZIndex,
+  featureIds,
+  tags,
+  stepIds,
+  featureMode,
   children,
   onGuideStart,
   onGuideClose,
@@ -75,7 +88,16 @@ export function MarkdownGuideTrigger({
     () => parseGuideContentSafe(guideContent, { format }),
     [guideContent, format]
   );
-  const parsedGuide = parseResult.guide;
+  const parsedGuide = useMemo(() => {
+    if (!parseResult.guide) return null;
+    if (!featureIds && !tags && !stepIds) return parseResult.guide;
+    return filterGuideByFeatures(parseResult.guide, {
+      featureIds,
+      tags,
+      stepIds,
+      mode: featureMode,
+    });
+  }, [featureIds, featureMode, parseResult.guide, stepIds, tags]);
   const guideLabel = parsedGuide?.meta.buttonLabel ?? "Start Guide";
 
   const normalizedTriggers = useMemo(() => {

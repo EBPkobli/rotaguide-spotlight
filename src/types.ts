@@ -178,6 +178,9 @@ export interface GuideStep {
   id: string;
   target: string;
   targets?: string[];
+  featureId?: string;
+  featureIds?: string[];
+  tags?: string[];
   title: string;
   kind: GuideKind;
   description: string;

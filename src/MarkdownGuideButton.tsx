@@ -1,5 +1,10 @@
 import { useCallback, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { formatGuideIssues } from "./errors";
+import {
+  filterGuideByFeatures,
+  type GuideFeatureInput,
+  type GuideFeatureMatchMode,
+} from "./featureGuides";
 import { parseGuideContentSafe } from "./parser";
 import { SpotlightGuideOverlay } from "./SpotlightGuideOverlay";
 import type { GuideDefinition, GuideIssue, GuideSourceFormat } from "./types";
@@ -16,6 +21,10 @@ export interface MarkdownGuideButtonProps {
   style?: CSSProperties;
   disabled?: boolean;
   overlayZIndex?: number;
+  featureIds?: GuideFeatureInput;
+  tags?: GuideFeatureInput;
+  stepIds?: GuideFeatureInput;
+  featureMode?: GuideFeatureMatchMode;
   renderButton?: (params: {
     onClick: () => void;
     label: string;
@@ -41,6 +50,10 @@ export function MarkdownGuideButton({
   style,
   disabled = false,
   overlayZIndex,
+  featureIds,
+  tags,
+  stepIds,
+  featureMode,
   renderButton,
   onGuideStart,
   onGuideClose,
@@ -63,7 +76,16 @@ export function MarkdownGuideButton({
     () => parseGuideContentSafe(guideContent, { format }),
     [guideContent, format]
   );
-  const parsedGuide = parseResult.guide;
+  const parsedGuide = useMemo(() => {
+    if (!parseResult.guide) return null;
+    if (!featureIds && !tags && !stepIds) return parseResult.guide;
+    return filterGuideByFeatures(parseResult.guide, {
+      featureIds,
+      tags,
+      stepIds,
+      mode: featureMode,
+    });
+  }, [featureIds, featureMode, parseResult.guide, stepIds, tags]);
 
   const buttonLabel =
     label ?? parsedGuide?.meta.buttonLabel ?? "Start Guide";

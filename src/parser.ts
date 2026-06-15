@@ -216,6 +216,36 @@ function collectStepTargets(parsed: Record<string, unknown>): string[] {
   return ordered;
 }
 
+function collectUniqueStrings(...sources: unknown[]): string[] {
+  const unique = new Set<string>();
+  const ordered: string[] = [];
+
+  sources.forEach((source) => {
+    parseStringList(source).forEach((entry) => {
+      if (unique.has(entry)) return;
+      unique.add(entry);
+      ordered.push(entry);
+    });
+  });
+
+  return ordered;
+}
+
+function collectStepFeatureIds(parsed: Record<string, unknown>): string[] {
+  return collectUniqueStrings(
+    parsed.featureIds,
+    parsed.features,
+    parsed.featureId,
+    parsed.feature,
+    parsed.featureKeys,
+    parsed.featureKey
+  );
+}
+
+function collectStepTags(parsed: Record<string, unknown>): string[] {
+  return collectUniqueStrings(parsed.tags, parsed.tag);
+}
+
 function parseHighlightStyle(value: unknown): GuideHighlightStyle | undefined {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim().toLowerCase();
@@ -662,6 +692,8 @@ function parseStep(
   const rawPrimaryTarget = toOptionalTrimmedString(parsed.target);
   const target = rawPrimaryTarget ?? aliasedTargets[0] ?? "";
   const targets = Array.from(new Set([target, ...aliasedTargets].filter((entry) => entry.length > 0)));
+  const featureIds = collectStepFeatureIds(parsed);
+  const tags = collectStepTags(parsed);
 
   return {
     id:
@@ -670,6 +702,9 @@ function parseStep(
         : defaultId,
     target,
     targets: targets.length > 0 ? targets : undefined,
+    featureId: featureIds[0],
+    featureIds: featureIds.length > 0 ? featureIds : undefined,
+    tags: tags.length > 0 ? tags : undefined,
     title: toStringOrEmpty(parsed.title) || headingLabel,
     kind: (toStringOrEmpty(parsed.kind) || "Action") as GuideKind,
     description: toStringOrEmpty(parsed.description),

@@ -135,6 +135,11 @@ Optional:
   - Aliases accepted and merged: `targetIds`, `componentIds`, `components`, `componentId`
   - Comma-separated string also accepted: `targets: "btn-a, btn-b, btn-c"`
   - All entries are de-duplicated; invisible or missing targets are silently skipped
+- `featureId: string` primary feature identifier for feature-based mini guides
+- `featureIds: string[]` additional feature identifiers
+  - Aliases accepted and merged: `feature`, `features`, `featureKey`, `featureKeys`
+  - Comma-separated string also accepted: `featureIds: "release-a, release-b"`
+- `tags: string[]` optional labels that can also be used for feature filtering
 - `skippable: boolean` (default true)
 - `allowSkip: boolean` legacy alias of `skippable`
 - `advanceOn: auto | click | change | input-idle | none` (default auto)
@@ -257,6 +262,9 @@ Example:
 ## 4.1 Normalization Aliases
 
 Parser normalization supported by guide content:
+
+- `feature`, `featureId`, `featureKey`, `features`, `featureIds`, `featureKeys` all map to feature identifiers
+- `tag` and `tags` map to step tags
 
 - `tooltipPosition` -> `tooltipPlacement`
 - `tooltipVariant` / `template` -> `tooltipTemplate`

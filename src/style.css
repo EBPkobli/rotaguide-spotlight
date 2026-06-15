@@ -773,6 +773,313 @@
   justify-content: flex-end;
 }
 
+/* ── Feature release notes / change log popup ───────────────────── */
+
+.msgt-release-root {
+  position: fixed;
+  inset: 0;
+}
+
+.msgt-release-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 43, 69, 0.34);
+  backdrop-filter: blur(3px);
+}
+
+.msgt-release-card {
+  position: relative;
+  margin: 72px auto;
+  width: min(640px, calc(100% - 32px));
+  max-height: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(186, 199, 208, 0.8);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(0, 43, 69, 0.28);
+  color: rgb(0, 43, 69);
+  font-family: var(--msgt-font-family, Inter, "Segoe UI", Arial, sans-serif);
+}
+
+.msgt-release-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid rgba(227, 234, 237, 0.95);
+  background: linear-gradient(180deg, rgba(209, 235, 255, 0.58), rgba(255, 255, 255, 0.96));
+  box-shadow: inset 0 4px 0 rgb(236, 91, 19);
+}
+
+.msgt-release-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.msgt-release-heading-copy {
+  min-width: 0;
+}
+
+.msgt-release-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(26, 99, 245, 0.22);
+  border-radius: 10px;
+  background: rgba(209, 235, 255, 0.82);
+  color: rgb(0, 43, 69);
+}
+
+.msgt-release-header-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.2;
+}
+
+.msgt-release-eyebrow {
+  margin: 0 0 5px;
+  color: rgb(236, 91, 19);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.msgt-release-title {
+  margin: 0;
+  color: rgb(0, 43, 69);
+  font-size: 22px;
+  line-height: 1.15;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.msgt-release-subtitle {
+  margin: 8px 0 0;
+  max-width: 54ch;
+  color: rgb(77, 94, 107);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.msgt-release-required-count {
+  flex: 0 0 auto;
+  border: 1px solid rgba(236, 91, 19, 0.24);
+  border-radius: 999px;
+  background: rgba(236, 91, 19, 0.08);
+  color: rgb(177, 67, 12);
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.msgt-release-list {
+  display: grid;
+  gap: 8px;
+  overflow: auto;
+  padding: 12px;
+  background: rgb(247, 250, 252);
+}
+
+.msgt-release-item {
+  --msgt-release-item-accent: rgb(0, 43, 69);
+  --msgt-release-item-accent-bg: rgba(209, 235, 255, 0.72);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid rgba(216, 226, 232, 0.95);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 12px;
+  box-shadow: inset 3px 0 0 var(--msgt-release-item-accent);
+}
+
+.msgt-release-item-viewed {
+  border-color: rgba(187, 205, 216, 0.7);
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: inset 3px 0 0 rgba(27, 128, 88, 0.62);
+}
+
+.msgt-release-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--msgt-release-item-accent) 22%, transparent);
+  border-radius: 10px;
+  background: var(--msgt-release-item-accent-bg);
+  color: var(--msgt-release-item-accent);
+}
+
+.msgt-release-item-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+
+.msgt-release-item-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.msgt-release-item-main {
+  min-width: 0;
+}
+
+.msgt-release-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 7px;
+}
+
+.msgt-release-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(0, 43, 69, 0.08);
+  color: rgb(0, 43, 69);
+  padding: 3px 7px;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.msgt-release-badge-required {
+  background: rgba(236, 91, 19, 0.1);
+  color: rgb(177, 67, 12);
+}
+
+.msgt-release-badge-viewed {
+  background: rgba(27, 128, 88, 0.1);
+  color: rgb(20, 111, 76);
+}
+
+.msgt-release-item-title {
+  margin: 0;
+  color: rgb(0, 43, 69);
+  font-size: 15px;
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.msgt-release-item-description {
+  margin: 5px 0 0;
+  color: rgb(77, 94, 107);
+  font-size: 13px;
+  line-height: 1.42;
+}
+
+.msgt-release-item-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  border: 1px solid rgb(0, 43, 69);
+  border-radius: 6px;
+  background: rgb(0, 43, 69);
+  color: #ffffff;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.msgt-release-item-action:hover {
+  background: rgb(0, 62, 97);
+  border-color: rgb(0, 62, 97);
+  transform: translateY(-1px);
+}
+
+.msgt-release-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  border-top: 1px solid rgba(227, 234, 237, 0.95);
+  background: #ffffff;
+}
+
+.msgt-release-required-hint {
+  margin: 0;
+  color: rgb(177, 67, 12);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.msgt-release-dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  border: 1px solid rgb(236, 91, 19);
+  border-radius: 999px;
+  background: rgb(236, 91, 19);
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.msgt-release-dismiss:disabled {
+  border-color: rgba(177, 67, 12, 0.22);
+  background: rgba(177, 67, 12, 0.12);
+  color: rgba(177, 67, 12, 0.72);
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .msgt-release-card {
+    margin: 20px auto;
+    max-height: calc(100vh - 40px);
+  }
+
+  .msgt-release-footer,
+  .msgt-release-item {
+    grid-template-columns: 1fr;
+  }
+
+  .msgt-release-header,
+  .msgt-release-footer {
+    align-items: stretch;
+  }
+
+  .msgt-release-header {
+    flex-direction: column;
+  }
+
+  .msgt-release-item-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .msgt-release-item-action,
+  .msgt-release-dismiss {
+    width: 100%;
+  }
+}
+
 /* ── Confetti animation ────────────────────────────────── */
 
 .msgt-confetti-container {

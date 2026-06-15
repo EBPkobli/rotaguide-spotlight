@@ -14,6 +14,8 @@ Latest release notes: see [CHANGELOG.md](./CHANGELOG.md).
 - Start guide from a button or custom trigger events
 - Black transparent backdrop + yellow focus mask
 - Step-by-step progression from markdown, JSON, or YAML content
+- Feature-based mini guides from the same full guide content
+- One-time release notes / change log popup with optional required updates
 - Multi-target spotlighting in a single step
 - Placement presets, template presets, i18n, and theme overrides
 - Runtime validation and clear parse error dialog
@@ -79,6 +81,45 @@ import { MarkdownGuideTrigger } from "rotaguide-spotlight";
 </MarkdownGuideTrigger>
 ```
 
+## Feature Release Notes
+
+Use `FeatureReleaseNotes` when a release should be announced once, and selected entries should launch only the relevant guide steps.
+
+```tsx
+import { FeatureReleaseNotes } from "rotaguide-spotlight";
+import { Activity, Sparkles } from "lucide-react";
+
+<FeatureReleaseNotes
+  id="vessel-tile-signals-2026-06"
+  title="What's new"
+  eyebrow="Pulse update"
+  subtitle="Vessel tiles now show progress and operational exceptions."
+  headerIcon={<Sparkles aria-hidden="true" />}
+  content={terminalGuideMarkdown}
+  items={[
+    {
+      id: "vessel-progress",
+      title: "Overall Milestone Progress",
+      description: "See completed milestones directly on each vessel tile.",
+      icon: <Activity aria-hidden="true" />,
+      accentColor: "#1A63F5",
+      accentBackgroundColor: "#D1EBFF",
+      featureIds: "vessel-tile-progress",
+      required: true,
+    },
+    {
+      id: "vessel-operational-exceptions",
+      title: "Operational Exception Indicator",
+      description: "Spot in-progress or incomplete operational exceptions faster.",
+      featureIds: "vessel-operational-exceptions",
+    },
+  ]}
+/>
+```
+
+The component stores dismissed state in `localStorage` using the release `id`.
+Pass a new `id` for a new release, or pass `storageKey` if your app needs a user-specific key.
+
 `guideTarget("x")` is a helper for adding `data-click-guide="x"`.
 
 In guide content, `target` can be:
@@ -104,6 +145,8 @@ For a practical feature-by-feature reference, see [TOOL_FEATURES_GUIDE.md](./TOO
 You can control behavior per step in markdown/json/yaml:
 
 - `targets: string[]` (highlight multiple elements at once; tooltip anchors to first; aliases: `targetIds`, `componentIds`, `components`, `componentId`)
+- `featureId: string` / `featureIds: string[]` (group steps for feature-based mini guides)
+- `tags: string[]` (additional filter labels for feature guide selection)
 - `skippable: boolean`
 - `mustClickTarget: boolean`
 - `mustEnterValue: boolean`
@@ -184,6 +227,10 @@ Props:
 - `label?: string`
 - `disabled?: boolean`
 - `overlayZIndex?: number`
+- `featureIds?: string | string[]`
+- `tags?: string | string[]`
+- `stepIds?: string | string[]`
+- `featureMode?: "any" | "all"`
 - `className?: string`
 - `style?: React.CSSProperties`
 - `renderButton?: ({ onClick, label, disabled }) => ReactNode`
@@ -207,6 +254,10 @@ Props:
 - `style?: React.CSSProperties` (wrapper mode)
 - `disabled?: boolean`
 - `overlayZIndex?: number`
+- `featureIds?: string | string[]`
+- `tags?: string | string[]`
+- `stepIds?: string | string[]`
+- `featureMode?: "any" | "all"`
 - `onGuideStart?: (guide) => void`
 - `onGuideClose?: () => void`
 - `onParseError?: (issues) => void`
@@ -216,6 +267,31 @@ Render function params:
 - `label: string` (`meta.buttonLabel` fallback)
 - `disabled: boolean`
 - `triggerProps: { onClick?, onMouseEnter?, onFocus? }`
+
+### `FeatureReleaseNotes`
+
+Props:
+- `id: string` (release identifier used for one-time storage)
+- `title?: string` (default: `"Change Log"`)
+- `eyebrow?: string`
+- `subtitle?: string`
+- `headerIcon?: ReactNode`
+- `items: FeatureReleaseNoteItem[]`
+- `content?: string` / `markdown?: string`
+- `format?: "auto" | "markdown" | "json" | "yaml"`
+- `storageKey?: string`
+- `forceRequired?: boolean` (default: `true`)
+- `dismissLabel?: string`
+- `requiredHint?: string`
+- `onDismiss?: ({ releaseId, acknowledgedItemIds }) => void`
+- `onItemGuideRequest?: (item) => false | void` (return `false` when your app handles routing/guide start itself)
+
+Item fields:
+- `id`, `title`, `description?`, `badge?`
+- `icon?: ReactNode`, `accentColor?`, `accentBackgroundColor?`
+- `featureId?`, `featureIds?`, `tags?`, `stepIds?`
+- `required?: boolean`
+- `ctaLabel?`, `acknowledgeLabel?`, `viewedLabel?`, `guideTitle?`
 
 ### `parseGuideContentSafe(content, options?)`
 
@@ -243,9 +319,12 @@ Returns parsed guide or throws `GuideParseError`.
 
 - `SpotlightGuideOverlay`
 - `MarkdownGuideTrigger`
+- `FeatureReleaseNotes`
 - `GuideParseError`
 - `formatGuideIssues()`
 - `guideTarget()`
+- `filterGuideByFeatures()`
+- `createFeatureGuideExtension()`
 - exported constants: `GUIDE_KINDS`, `GUIDE_ADVANCE_MODES`, `GUIDE_SOURCE_FORMATS`, `GUIDE_HIGHLIGHT_STYLES`, `GUIDE_HIGHLIGHT_ANIMATIONS`, `GUIDE_TOOLTIP_PLACEMENTS`, `GUIDE_TOOLTIP_TEMPLATES`
 - exported types: `GuideDefinition`, `GuideMeta`, `GuideStep`, `GuideIssue`, `GuideI18n`, `GuideTheme`, `GuideKind`, `GuideAdvanceMode`, `GuideSourceFormat`, `GuideHighlightStyle`, `GuideHighlightAnimation`, `GuideTooltipPlacement`, `GuideTooltipTemplate`
 
