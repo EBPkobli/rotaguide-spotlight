@@ -10,7 +10,9 @@ export { FeatureReleaseNotes } from "./FeatureReleaseNotes";
 export type {
   FeatureReleaseNoteItem,
   FeatureReleaseNotesDismissEvent,
+  FeatureReleaseNotesGuideAllEvent,
   FeatureReleaseNotesProps,
+  FeatureReleaseNotesTheme,
 } from "./FeatureReleaseNotes";
 
 export { SpotlightGuideOverlay } from "./SpotlightGuideOverlay";

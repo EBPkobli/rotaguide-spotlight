@@ -33,14 +33,68 @@ export interface FeatureReleaseNoteItem {
   stepIds?: GuideFeatureInput;
   required?: boolean;
   ctaLabel?: string;
+  repeatCtaLabel?: string;
   acknowledgeLabel?: string;
   viewedLabel?: string;
   guideTitle?: string;
 }
 
+type ThemeSizeValue = string | number;
+
+export interface FeatureReleaseNotesTheme {
+  fontFamily?: string;
+  backdropColor?: string;
+  backdropBlur?: string;
+  cardBackgroundColor?: string;
+  cardTextColor?: string;
+  mutedTextColor?: string;
+  borderColor?: string;
+  shadow?: string;
+  panelBackgroundColor?: string;
+  footerBackgroundColor?: string;
+  itemBackgroundColor?: string;
+  viewedItemBackgroundColor?: string;
+  headerBackground?: string;
+  headerAccentColor?: string;
+  headerIconBackgroundColor?: string;
+  headerIconBorderColor?: string;
+  headerIconColor?: string;
+  badgeBackgroundColor?: string;
+  badgeTextColor?: string;
+  requiredColor?: string;
+  requiredBackgroundColor?: string;
+  requiredBorderColor?: string;
+  viewedColor?: string;
+  viewedBackgroundColor?: string;
+  viewedBorderColor?: string;
+  actionBackgroundColor?: string;
+  actionBorderColor?: string;
+  actionTextColor?: string;
+  actionHoverBackgroundColor?: string;
+  actionHoverBorderColor?: string;
+  dismissBackgroundColor?: string;
+  dismissBorderColor?: string;
+  dismissTextColor?: string;
+  dismissHoverBackgroundColor?: string;
+  dismissHoverBorderColor?: string;
+  disabledDismissBackgroundColor?: string;
+  disabledDismissBorderColor?: string;
+  disabledDismissTextColor?: string;
+  cardBorderRadius?: ThemeSizeValue;
+  itemBorderRadius?: ThemeSizeValue;
+  iconBorderRadius?: ThemeSizeValue;
+  actionButtonBorderRadius?: ThemeSizeValue;
+  dismissButtonBorderRadius?: ThemeSizeValue;
+}
+
 export interface FeatureReleaseNotesDismissEvent {
   releaseId: string;
   acknowledgedItemIds: string[];
+}
+
+export interface FeatureReleaseNotesGuideAllEvent {
+  releaseId: string;
+  items: FeatureReleaseNoteItem[];
 }
 
 export interface FeatureReleaseNotesProps {
@@ -57,8 +111,18 @@ export interface FeatureReleaseNotesProps {
   disabled?: boolean;
   open?: boolean;
   forceRequired?: boolean;
+  allowRepeatGuideViews?: boolean;
+  showItemIcons?: boolean;
+  showItemBadges?: boolean;
+  showRequiredBadges?: boolean;
+  showViewedBadges?: boolean;
+  showGuideAll?: boolean;
+  guideAllLabel?: string;
+  guideAllRepeatLabel?: string;
+  guideAllTitle?: string;
   dismissLabel?: string;
   requiredHint?: string;
+  theme?: FeatureReleaseNotesTheme;
   className?: string;
   style?: CSSProperties;
   overlayZIndex?: number;
@@ -69,6 +133,9 @@ export interface FeatureReleaseNotesProps {
   onItemGuideRequest?: (item: FeatureReleaseNoteItem) => boolean | void;
   onItemGuideStart?: (item: FeatureReleaseNoteItem, guide: GuideDefinition) => void;
   onItemGuideClose?: (item: FeatureReleaseNoteItem | null) => void;
+  onGuideAllRequest?: (event: FeatureReleaseNotesGuideAllEvent) => boolean | void;
+  onGuideAllStart?: (event: FeatureReleaseNotesGuideAllEvent, guide: GuideDefinition) => void;
+  onGuideAllClose?: (event: FeatureReleaseNotesGuideAllEvent) => void;
   onParseError?: (issues: GuideIssue[]) => void;
   instance?: SpotlightInstance;
   extension?: SpotlightExtension;
@@ -83,10 +150,14 @@ const DEFAULT_TITLE = "Change Log";
 const DEFAULT_EYEBROW = "New updates";
 const DEFAULT_DISMISS_LABEL = "Got it";
 const DEFAULT_REQUIRED_HINT = "Review required updates to continue.";
+const DEFAULT_GUIDE_ALL_LABEL = "Guide all features";
+
+type ReleaseCssVars = CSSProperties & {
+  [key: `--msgt-release-${string}`]: string | undefined;
+};
 
 type ReleaseItemStyle = CSSProperties & {
-  "--msgt-release-item-accent"?: string;
-  "--msgt-release-item-accent-bg"?: string;
+  [key: `--msgt-release-item-${string}`]: string | undefined;
 };
 
 function hasDom() {
@@ -160,6 +231,14 @@ function getItemFeatureIds(item: FeatureReleaseNoteItem) {
   ]);
 }
 
+function getGuideFiltersForItems(items: FeatureReleaseNoteItem[]) {
+  return {
+    featureIds: unique(items.flatMap((item) => getItemFeatureIds(item))),
+    tags: unique(items.flatMap((item) => normalizeList(item.tags))),
+    stepIds: unique(items.flatMap((item) => normalizeList(item.stepIds))),
+  };
+}
+
 function getReleaseItemStyle(item: FeatureReleaseNoteItem): ReleaseItemStyle | undefined {
   const style: ReleaseItemStyle = {};
   if (item.accentColor) {
@@ -168,6 +247,74 @@ function getReleaseItemStyle(item: FeatureReleaseNoteItem): ReleaseItemStyle | u
   if (item.accentBackgroundColor) {
     style["--msgt-release-item-accent-bg"] = item.accentBackgroundColor;
   }
+  return Object.keys(style).length > 0 ? style : undefined;
+}
+
+function toCssValue(value: ThemeSizeValue | undefined): string | undefined {
+  if (typeof value === "number") return `${value}px`;
+  return value;
+}
+
+function getReleaseThemeStyle(theme: FeatureReleaseNotesTheme | undefined): ReleaseCssVars | undefined {
+  if (!theme) return undefined;
+
+  const style: ReleaseCssVars = {};
+  const assign = (name: `--msgt-release-${string}`, value: string | undefined) => {
+    if (value) {
+      style[name] = value;
+    }
+  };
+  const assignSize = (name: `--msgt-release-${string}`, value: ThemeSizeValue | undefined) => {
+    const cssValue = toCssValue(value);
+    if (cssValue) {
+      style[name] = cssValue;
+    }
+  };
+
+  assign("--msgt-release-font-family", theme.fontFamily);
+  assign("--msgt-release-backdrop", theme.backdropColor);
+  assign("--msgt-release-backdrop-blur", theme.backdropBlur);
+  assign("--msgt-release-surface", theme.cardBackgroundColor);
+  assign("--msgt-release-text", theme.cardTextColor);
+  assign("--msgt-release-muted", theme.mutedTextColor);
+  assign("--msgt-release-border", theme.borderColor);
+  assign("--msgt-release-shadow", theme.shadow);
+  assign("--msgt-release-panel-bg", theme.panelBackgroundColor);
+  assign("--msgt-release-footer-bg", theme.footerBackgroundColor);
+  assign("--msgt-release-item-bg", theme.itemBackgroundColor);
+  assign("--msgt-release-item-viewed-bg", theme.viewedItemBackgroundColor);
+  assign("--msgt-release-header-bg", theme.headerBackground);
+  assign("--msgt-release-header-accent", theme.headerAccentColor);
+  assign("--msgt-release-header-icon-bg", theme.headerIconBackgroundColor);
+  assign("--msgt-release-header-icon-border", theme.headerIconBorderColor);
+  assign("--msgt-release-header-icon-color", theme.headerIconColor);
+  assign("--msgt-release-badge-bg", theme.badgeBackgroundColor);
+  assign("--msgt-release-badge-text", theme.badgeTextColor);
+  assign("--msgt-release-required", theme.requiredColor);
+  assign("--msgt-release-required-bg", theme.requiredBackgroundColor);
+  assign("--msgt-release-required-border", theme.requiredBorderColor);
+  assign("--msgt-release-viewed", theme.viewedColor);
+  assign("--msgt-release-viewed-bg", theme.viewedBackgroundColor);
+  assign("--msgt-release-viewed-border", theme.viewedBorderColor);
+  assign("--msgt-release-action-bg", theme.actionBackgroundColor);
+  assign("--msgt-release-action-border", theme.actionBorderColor);
+  assign("--msgt-release-action-text", theme.actionTextColor);
+  assign("--msgt-release-action-hover-bg", theme.actionHoverBackgroundColor);
+  assign("--msgt-release-action-hover-border", theme.actionHoverBorderColor);
+  assign("--msgt-release-dismiss-bg", theme.dismissBackgroundColor);
+  assign("--msgt-release-dismiss-border", theme.dismissBorderColor);
+  assign("--msgt-release-dismiss-text", theme.dismissTextColor);
+  assign("--msgt-release-dismiss-hover-bg", theme.dismissHoverBackgroundColor);
+  assign("--msgt-release-dismiss-hover-border", theme.dismissHoverBorderColor);
+  assign("--msgt-release-dismiss-disabled-bg", theme.disabledDismissBackgroundColor);
+  assign("--msgt-release-dismiss-disabled-border", theme.disabledDismissBorderColor);
+  assign("--msgt-release-dismiss-disabled-text", theme.disabledDismissTextColor);
+  assignSize("--msgt-release-card-radius", theme.cardBorderRadius);
+  assignSize("--msgt-release-item-radius", theme.itemBorderRadius);
+  assignSize("--msgt-release-icon-radius", theme.iconBorderRadius);
+  assignSize("--msgt-release-action-radius", theme.actionButtonBorderRadius);
+  assignSize("--msgt-release-dismiss-radius", theme.dismissButtonBorderRadius);
+
   return Object.keys(style).length > 0 ? style : undefined;
 }
 
@@ -185,8 +332,18 @@ export function FeatureReleaseNotes({
   disabled = false,
   open,
   forceRequired = true,
+  allowRepeatGuideViews = true,
+  showItemIcons = true,
+  showItemBadges = true,
+  showRequiredBadges = true,
+  showViewedBadges = true,
+  showGuideAll = false,
+  guideAllLabel = DEFAULT_GUIDE_ALL_LABEL,
+  guideAllRepeatLabel,
+  guideAllTitle,
   dismissLabel = DEFAULT_DISMISS_LABEL,
   requiredHint = DEFAULT_REQUIRED_HINT,
+  theme,
   className,
   style,
   overlayZIndex,
@@ -197,6 +354,9 @@ export function FeatureReleaseNotes({
   onItemGuideRequest,
   onItemGuideStart,
   onItemGuideClose,
+  onGuideAllRequest,
+  onGuideAllStart,
+  onGuideAllClose,
   onParseError,
   instance: instanceProp,
   extension: extensionProp,
@@ -213,6 +373,7 @@ export function FeatureReleaseNotes({
   const [guideOpen, setGuideOpen] = useState(false);
   const [activeGuide, setActiveGuide] = useState<GuideDefinition | null>(null);
   const [activeItem, setActiveItem] = useState<FeatureReleaseNoteItem | null>(null);
+  const [activeGuideItems, setActiveGuideItems] = useState<FeatureReleaseNoteItem[]>([]);
   const [errorIssues, setErrorIssues] = useState<GuideIssue[] | null>(null);
 
   const guideContent = content ?? markdown ?? "";
@@ -234,7 +395,9 @@ export function FeatureReleaseNotes({
   const acknowledgedIds = storedState.acknowledgedItemIds ?? [];
   const acknowledgedSet = useMemo(() => new Set(acknowledgedIds), [acknowledgedIds]);
   const requiredItems = useMemo(() => items.filter((item) => item.required), [items]);
+  const guideItems = useMemo(() => items.filter(hasGuideFilter), [items]);
   const requiredComplete = requiredItems.every((item) => acknowledgedSet.has(item.id));
+  const guideItemsComplete = guideItems.every((item) => acknowledgedSet.has(item.id));
   const dismissBlocked = forceRequired && requiredItems.length > 0 && !requiredComplete;
   const popupOpen = isControlled ? Boolean(open) : internalOpen;
   const shouldRenderPopup = hydrated && !disabled && popupOpen && !guideOpen;
@@ -260,13 +423,16 @@ export function FeatureReleaseNotes({
     [effectiveStorageKey]
   );
 
-  const acknowledgeItem = useCallback(
-    (item: FeatureReleaseNoteItem) => {
+  const acknowledgeItems = useCallback(
+    (nextItems: FeatureReleaseNoteItem[]) => {
       updateStored((previous) => ({
         ...previous,
-        acknowledgedItemIds: unique([...(previous.acknowledgedItemIds ?? []), item.id]),
+        acknowledgedItemIds: unique([
+          ...(previous.acknowledgedItemIds ?? []),
+          ...nextItems.map((item) => item.id),
+        ]),
       }));
-      onItemAcknowledge?.(item);
+      nextItems.forEach((item) => onItemAcknowledge?.(item));
     },
     [onItemAcknowledge, updateStored]
   );
@@ -286,15 +452,30 @@ export function FeatureReleaseNotes({
     });
   }, [dismissBlocked, id, onDismiss, setPopupOpen, storedState.acknowledgedItemIds, updateStored]);
 
-  const startGuideForItem = useCallback(
-    (item: FeatureReleaseNoteItem) => {
-      if (!hasGuideFilter(item)) {
-        acknowledgeItem(item);
+  const startGuideForItems = useCallback(
+    (nextItems: FeatureReleaseNoteItem[], mode: "single" | "all") => {
+      const nextGuideItems = nextItems.filter(hasGuideFilter);
+
+      if (nextGuideItems.length === 0) {
+        acknowledgeItems(nextItems);
         return;
       }
 
-      if (onItemGuideRequest?.(item) === false) {
-        acknowledgeItem(item);
+      if (mode === "single") {
+        const item = nextGuideItems[0];
+        if (onItemGuideRequest?.(item) === false) {
+          acknowledgeItems([item]);
+          return;
+        }
+      }
+
+      const guideAllEvent: FeatureReleaseNotesGuideAllEvent = {
+        releaseId: id,
+        items: nextGuideItems,
+      };
+
+      if (mode === "all" && onGuideAllRequest?.(guideAllEvent) === false) {
+        acknowledgeItems(nextGuideItems);
         return;
       }
 
@@ -304,58 +485,107 @@ export function FeatureReleaseNotes({
         return;
       }
 
+      const filters = getGuideFiltersForItems(nextGuideItems);
+      const singleItem = mode === "single" ? nextGuideItems[0] : null;
       const featureGuide = filterGuideByFeatures(parseResult.guide, {
-        featureIds: getItemFeatureIds(item),
-        tags: item.tags,
-        stepIds: item.stepIds,
+        featureIds: filters.featureIds,
+        tags: filters.tags,
+        stepIds: filters.stepIds,
         meta: {
-          id: `${parseResult.guide.meta.id}-${item.id}`,
-          title: item.guideTitle ?? item.title,
-          tooltipTitle: item.guideTitle ?? item.title,
+          id:
+            mode === "single"
+              ? `${parseResult.guide.meta.id}-${singleItem?.id ?? "feature"}`
+              : `${parseResult.guide.meta.id}-feature-release`,
+          title:
+            mode === "single"
+              ? singleItem?.guideTitle ?? singleItem?.title ?? parseResult.guide.meta.title
+              : guideAllTitle ?? title,
+          tooltipTitle:
+            mode === "single"
+              ? singleItem?.guideTitle ?? singleItem?.title ?? parseResult.guide.meta.title
+              : guideAllTitle ?? title,
         },
       });
 
-      acknowledgeItem(item);
+      acknowledgeItems(nextGuideItems);
 
       if (featureGuide.steps.length === 0) {
         return;
       }
 
-      setActiveItem(item);
+      setActiveItem(singleItem);
+      setActiveGuideItems(nextGuideItems);
       setActiveGuide(featureGuide);
       setGuideOpen(true);
-      onItemGuideStart?.(item, featureGuide);
+      if (mode === "single" && singleItem) {
+        onItemGuideStart?.(singleItem, featureGuide);
+      } else {
+        onGuideAllStart?.(guideAllEvent, featureGuide);
+      }
     },
     [
-      acknowledgeItem,
+      acknowledgeItems,
+      guideAllTitle,
+      id,
+      onGuideAllRequest,
+      onGuideAllStart,
       onItemGuideRequest,
       onItemGuideStart,
       onParseError,
       parseResult.guide,
       parseResult.issues,
+      title,
     ]
+  );
+
+  const startGuideForItem = useCallback(
+    (item: FeatureReleaseNoteItem) => startGuideForItems([item], "single"),
+    [startGuideForItems]
+  );
+
+  const startGuideForAll = useCallback(
+    () => startGuideForItems(guideItems, "all"),
+    [guideItems, startGuideForItems]
   );
 
   const closeGuide = useCallback(() => {
     const item = activeItem;
+    const itemsForGuide = activeGuideItems;
     setGuideOpen(false);
     setActiveGuide(null);
     setActiveItem(null);
-    onItemGuideClose?.(item);
-  }, [activeItem, onItemGuideClose]);
+    setActiveGuideItems([]);
+    if (item) {
+      onItemGuideClose?.(item);
+      return;
+    }
+    if (itemsForGuide.length > 0) {
+      onGuideAllClose?.({ releaseId: id, items: itemsForGuide });
+    }
+  }, [activeGuideItems, activeItem, id, onGuideAllClose, onItemGuideClose]);
 
   const closeError = useCallback(() => setErrorIssues(null), []);
+  const releaseThemeStyle = useMemo(() => getReleaseThemeStyle(theme), [theme]);
+  const showGuideAllAction = showGuideAll && guideItems.length > 1;
+  const guideAllActionLabel = guideItemsComplete
+    ? guideAllRepeatLabel ?? guideAllLabel
+    : guideAllLabel;
 
   if (!hasDom()) return null;
 
   const popup = shouldRenderPopup ? (
-    <div className="msgt-release-root" style={{ zIndex: popupZIndex }}>
+    <div
+      className="msgt-release-root"
+      style={{ zIndex: popupZIndex, ...releaseThemeStyle }}
+    >
       <div
         className="msgt-release-backdrop"
         onClick={dismissBlocked ? undefined : dismiss}
       />
       <section
-        className={`msgt-release-card ${className ?? ""}`.trim()}
+        className={`msgt-release-card ${
+          !showItemIcons ? "msgt-release-card--no-item-icons" : ""
+        } ${className ?? ""}`.trim()}
         style={style}
         role="dialog"
         aria-modal="true"
@@ -389,8 +619,20 @@ export function FeatureReleaseNotes({
             const viewed = acknowledgedSet.has(item.id);
             const canRunGuide = hasGuideFilter(item);
             const itemActionLabel = canRunGuide
-              ? item.ctaLabel ?? "Show me"
+              ? viewed
+                ? item.repeatCtaLabel ?? item.ctaLabel ?? "View again"
+                : item.ctaLabel ?? "Show me"
               : item.acknowledgeLabel ?? "Mark as read";
+            const showItemAction = canRunGuide
+              ? allowRepeatGuideViews || !viewed
+              : item.required && !viewed;
+            const showBadgeRow =
+              showItemBadges &&
+              Boolean(
+                item.badge ||
+                  (item.required && showRequiredBadges) ||
+                  (viewed && showViewedBadges)
+              );
 
             return (
               <article
@@ -398,29 +640,33 @@ export function FeatureReleaseNotes({
                 className={`msgt-release-item ${viewed ? "msgt-release-item-viewed" : ""}`.trim()}
                 style={getReleaseItemStyle(item)}
               >
-                <span className="msgt-release-item-icon" aria-hidden="true">
-                  {item.icon ?? <span className="msgt-release-item-dot" />}
-                </span>
+                {showItemIcons ? (
+                  <span className="msgt-release-item-icon" aria-hidden="true">
+                    {item.icon ?? <span className="msgt-release-item-dot" />}
+                  </span>
+                ) : null}
                 <div className="msgt-release-item-main">
-                  <div className="msgt-release-item-meta">
-                    {item.badge ? <span className="msgt-release-badge">{item.badge}</span> : null}
-                    {item.required ? (
-                      <span className="msgt-release-badge msgt-release-badge-required">
-                        Required
-                      </span>
-                    ) : null}
-                    {viewed ? (
-                      <span className="msgt-release-badge msgt-release-badge-viewed">
-                        {item.viewedLabel ?? "Viewed"}
-                      </span>
-                    ) : null}
-                  </div>
+                  {showBadgeRow ? (
+                    <div className="msgt-release-item-meta">
+                      {item.badge ? <span className="msgt-release-badge">{item.badge}</span> : null}
+                      {item.required && showRequiredBadges ? (
+                        <span className="msgt-release-badge msgt-release-badge-required">
+                          Required
+                        </span>
+                      ) : null}
+                      {viewed && showViewedBadges ? (
+                        <span className="msgt-release-badge msgt-release-badge-viewed">
+                          {item.viewedLabel ?? "Viewed"}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
                   <h3 className="msgt-release-item-title">{item.title}</h3>
                   {item.description ? (
                     <p className="msgt-release-item-description">{item.description}</p>
                   ) : null}
                 </div>
-                {(canRunGuide || item.required) && !viewed ? (
+                {showItemAction ? (
                   <button
                     type="button"
                     className="msgt-release-item-action"
@@ -438,14 +684,25 @@ export function FeatureReleaseNotes({
           {dismissBlocked ? (
             <p className="msgt-release-required-hint">{requiredHint}</p>
           ) : <span />}
-          <button
-            type="button"
-            className="msgt-release-dismiss"
-            onClick={dismiss}
-            disabled={dismissBlocked}
-          >
-            {dismissLabel}
-          </button>
+          <div className="msgt-release-footer-actions">
+            {showGuideAllAction ? (
+              <button
+                type="button"
+                className="msgt-release-guide-all"
+                onClick={startGuideForAll}
+              >
+                {guideAllActionLabel}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="msgt-release-dismiss"
+              onClick={dismiss}
+              disabled={dismissBlocked}
+            >
+              {dismissLabel}
+            </button>
+          </div>
         </div>
       </section>
     </div>

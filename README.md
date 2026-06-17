@@ -95,6 +95,13 @@ import { Activity, Sparkles } from "lucide-react";
   eyebrow="Pulse update"
   subtitle="Vessel tiles now show progress and operational exceptions."
   headerIcon={<Sparkles aria-hidden="true" />}
+  theme={{
+    headerAccentColor: "#EC5B13",
+    actionBackgroundColor: "#002B45",
+    dismissBackgroundColor: "#EC5B13",
+  }}
+  showGuideAll
+  guideAllLabel="Guide all features"
   content={terminalGuideMarkdown}
   items={[
     {
@@ -106,6 +113,8 @@ import { Activity, Sparkles } from "lucide-react";
       accentBackgroundColor: "#D1EBFF",
       featureIds: "vessel-tile-progress",
       required: true,
+      ctaLabel: "Show",
+      repeatCtaLabel: "Show again",
     },
     {
       id: "vessel-operational-exceptions",
@@ -281,17 +290,30 @@ Props:
 - `format?: "auto" | "markdown" | "json" | "yaml"`
 - `storageKey?: string`
 - `forceRequired?: boolean` (default: `true`)
+- `allowRepeatGuideViews?: boolean` (default: `true`)
+- `showItemIcons?: boolean` (default: `true`)
+- `showItemBadges?: boolean` (default: `true`)
+- `showRequiredBadges?: boolean` (default: `true`)
+- `showViewedBadges?: boolean` (default: `true`)
+- `showGuideAll?: boolean`
+- `guideAllLabel?: string`, `guideAllRepeatLabel?: string`, `guideAllTitle?: string`
 - `dismissLabel?: string`
 - `requiredHint?: string`
+- `theme?: FeatureReleaseNotesTheme`
 - `onDismiss?: ({ releaseId, acknowledgedItemIds }) => void`
 - `onItemGuideRequest?: (item) => false | void` (return `false` when your app handles routing/guide start itself)
+- `onGuideAllRequest?: ({ releaseId, items }) => false | void`
 
 Item fields:
 - `id`, `title`, `description?`, `badge?`
 - `icon?: ReactNode`, `accentColor?`, `accentBackgroundColor?`
 - `featureId?`, `featureIds?`, `tags?`, `stepIds?`
 - `required?: boolean`
-- `ctaLabel?`, `acknowledgeLabel?`, `viewedLabel?`, `guideTitle?`
+- `ctaLabel?`, `repeatCtaLabel?`, `acknowledgeLabel?`, `viewedLabel?`, `guideTitle?`
+
+`theme` is a plain object of design tokens such as `headerAccentColor`, `actionBackgroundColor`, `dismissBackgroundColor`, `cardTextColor`, and border radius values. You can keep those tokens in JSON/YAML and pass the parsed object to `FeatureReleaseNotes`.
+Use `showGuideAll` when the popup should offer both per-feature guide actions and a single guide-through-all-features action.
+Use `showItemIcons={false}` and/or `showItemBadges={false}` for a quieter product-style changelog that still keeps feature guide actions.
 
 ### `parseGuideContentSafe(content, options?)`
 

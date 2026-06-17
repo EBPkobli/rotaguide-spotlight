@@ -63,6 +63,16 @@ import { Activity, Sparkles } from "lucide-react";
   title="What's new"
   eyebrow="Pulse update"
   headerIcon={<Sparkles aria-hidden="true" />}
+  theme={{
+    cardTextColor: "#002B45",
+    headerAccentColor: "#EC5B13",
+    actionBackgroundColor: "#002B45",
+    dismissBackgroundColor: "#EC5B13",
+  }}
+  showGuideAll
+  guideAllLabel="Guide all features"
+  showItemIcons={false}
+  showItemBadges={false}
   content={guideContent}
   items={[
     {
@@ -74,6 +84,8 @@ import { Activity, Sparkles } from "lucide-react";
       accentBackgroundColor: "#D1EBFF",
       featureIds: "vessel-tile-progress",
       required: true,
+      ctaLabel: "Show",
+      repeatCtaLabel: "Show again",
     },
     {
       id: "exceptions",
@@ -87,6 +99,9 @@ import { Activity, Sparkles } from "lucide-react";
 
 Use a new `id` for every new release. Use `storageKey` when the dismissed state should be scoped to a specific user or tenant.
 Use `headerIcon`, item `icon`, `accentColor`, and `accentBackgroundColor` when the popup should visually match your product theme.
+Use `theme` for serializable color, radius, font, and button tokens; it can be loaded from JSON/YAML before rendering the component.
+Use `showGuideAll` to offer a complete feature tour while keeping each item independently clickable.
+Use `showItemIcons={false}`, `showItemBadges={false}`, `showRequiredBadges={false}`, or `showViewedBadges={false}` when the release notes need to match a calmer in-product modal.
 
 ## 2. Markdown Structure
 

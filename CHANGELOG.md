@@ -7,6 +7,10 @@
 - **Feature release notes popup** — New `FeatureReleaseNotes` component shows one-time release/change-log announcements and can launch feature-specific guide steps from each entry.
 - **Required update flow** — Release note items can be marked `required`; dismissal can be blocked until required updates are viewed or acknowledged.
 - **Themed release note entries** — Release note popups now accept header/item icons and per-item accent colors for branded change-log experiences.
+- **Release note theme tokens** — `FeatureReleaseNotes` accepts a generic `theme` object for colors, radius, font, backdrop, and button styling.
+- **Repeat feature views** — Feature guide entries can remain viewable after being marked as viewed while the change log is still open.
+- **Guide all features action** — Release note popups can offer a grouped guide-through-all-features action without changing per-feature item actions.
+- **Release note display controls** — Release note popups can hide item icons, custom badges, required badges, and viewed badges for quieter in-product update modals.
 - **Feature guide helpers** — Exported `filterGuideByFeatures`, `createFeatureGuideExtension`, `getGuideStepFeatureIds`, and `getGuideStepTags`.
 
 ### Changed
